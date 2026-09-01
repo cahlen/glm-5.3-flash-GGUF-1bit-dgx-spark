@@ -149,8 +149,14 @@ def test_systemd_unit_execs_the_launcher_not_a_raw_command():
 
 
 def test_guard_exemption_names_the_actual_unit():
-    """If the unit is renamed and the exemption is not, the kill loop returns."""
-    installer = Path.home() / "install-gpu-mem-guard.sh"
-    if not installer.is_file():
-        pytest.skip("guard installer not present")
-    assert "glm53.service" in installer.read_text()
+    """If the unit is renamed and the exemption is not, the kill loop returns.
+
+    Checks the copy in deploy/, never $HOME: a machine may well have an
+    unrelated file of that name, and comparing against it produces a confusing
+    false failure on a fresh clone.
+    """
+    installer = ROOT / "deploy" / "install-gpu-mem-guard.sh"
+    assert installer.is_file(), "deploy/install-gpu-mem-guard.sh is missing"
+    text = installer.read_text()
+    assert "GPU_GUARD_EXEMPT_UNITS" in text
+    assert "glm53.service" in text

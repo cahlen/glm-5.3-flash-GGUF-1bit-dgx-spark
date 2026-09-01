@@ -10,6 +10,7 @@ moment they diverge. If one fails, copy the newer file over the older — do not
 "fix" the test.
 """
 
+import os
 from pathlib import Path
 
 import pytest
@@ -21,6 +22,23 @@ PAIRS = [
     (DEPLOY / "install-gpu-mem-guard.sh", Path.home() / "install-gpu-mem-guard.sh"),
     (DEPLOY / "glm53.service", Path.home() / ".config/systemd/user/glm53.service"),
 ]
+
+
+# This suite compares repo copies against files installed elsewhere on the
+# machine, so it only means anything on the host actually running the server.
+# It is OPT-IN: a fresh clone on any other machine may have unrelated files at
+# those paths (an older install-gpu-mem-guard.sh from a different project, say),
+# and silently comparing against them produces a baffling failure. Run it on the
+# deployment host with:
+#
+#     GLM53_DEPLOY_HOST=1 uv run --group dev pytest tests/test_deploy_sync.py
+#
+DEPLOY_HOST = os.environ.get("GLM53_DEPLOY_HOST") == "1"
+
+pytestmark = pytest.mark.skipif(
+    not DEPLOY_HOST,
+    reason="deployment-host check; set GLM53_DEPLOY_HOST=1 to run",
+)
 
 
 @pytest.mark.parametrize("copy,original", PAIRS, ids=lambda p: p.name)

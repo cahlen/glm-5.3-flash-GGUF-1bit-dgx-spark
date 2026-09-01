@@ -1,0 +1,42 @@
+name: tests
+
+# The harness tests need no GPU, no model and no server — they run in well under
+# a second. That is deliberate: scoring and parsing are split from HTTP so every
+# judgement is testable without standing up a 87 GiB model. Which means CI can
+# actually check the thing that matters, rather than just linting.
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  pytest:
+    name: pytest (no GPU required)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+      - name: Sync deps
+        run: uv sync --group dev
+      - name: Run tests
+        run: uv run --group dev pytest -q
+      # The deploy/ drift checks compare against files installed outside the
+      # repo, so they are opt-in and correctly skipped here — a CI runner is not
+      # the deployment host. Asserted so the gating itself cannot silently break.
+      - name: Deploy-sync checks must be skipped off-host
+        run: |
+          uv run --group dev pytest tests/test_deploy_sync.py -q 2>&1 | tee /tmp/ds.txt
+          grep -qE "[0-9]+ skipped" /tmp/ds.txt
+
+  shellcheck:
+    name: shellcheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install shellcheck
+        run: sudo apt-get update && sudo apt-get install -y shellcheck
+      - name: Lint shell scripts
+        run: shellcheck -S warning serving/*.sh deploy/*.sh
