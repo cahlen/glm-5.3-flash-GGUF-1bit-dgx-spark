@@ -1,5 +1,5 @@
 [project]
-name = "glm53-dgx-spark"
+name = "glm-5-3-flash-gguf-1bit-dgx-spark"
 version = "1.0.0"
 description = "Optimal GLM-5.3-Flash GGUF serving configuration for the NVIDIA DGX Spark (GB10)"
 requires-python = ">=3.11"

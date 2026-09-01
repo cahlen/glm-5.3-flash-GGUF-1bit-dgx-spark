@@ -58,7 +58,7 @@ glm53` to change anything. The unit contains no flags.
 
 Paths are portable: `glm53.env` uses `${HOME}`, and `deploy/glm53.service` uses
 systemd's `%h` specifier, so nothing is pinned to one account. Both assume the
-repo is at `~/dev/glm53-dgx-spark` and the weights at `~/models/...`; change
+repo is at `~/dev/glm-5.3-flash-GGUF-1bit-dgx-spark` and the weights at `~/models/...`; change
 `GLM53_MODEL` / `GLM53_BIN` and the unit's `ExecStart` if you put them elsewhere.
 
 Everything here targets **one** machine shape: a single GB10 with ~128 GB of

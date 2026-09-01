@@ -34,7 +34,7 @@ wheels = [
 ]
 
 [[package]]
-name = "glm53-dgx-spark"
+name = "glm-5-3-flash-gguf-1bit-dgx-spark"
 version = "1.0.0"
 source = { virtual = "." }
 dependencies = [
