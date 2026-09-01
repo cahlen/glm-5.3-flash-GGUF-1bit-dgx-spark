@@ -1,8 +1,9 @@
 """The 10 agentic scenarios GLM-5.3-Flash must pass to be trusted for autonomous coding.
 
 Split from bench_agentic.py so every scenario and its verdict function can be
-unit-tested without standing up a server (same split as toolcall_spec.py — see
-results/BENCHDAY.md for why that split is not optional here).
+unit-tested without standing up a server. That split is not optional: a bench
+whose scoring only runs against a live model has no way to prove the scoring
+itself is right, and silently-passing checks produce confident wrong numbers.
 
 A scenario is a dict:
     id            stable name, used as the results key

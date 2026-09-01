@@ -45,7 +45,7 @@ install -m 0755 /dev/stdin /usr/local/bin/gpu-mem-guard.sh <<'DAEMON'
 #      through that load, and fell to 12.2G on its own in the real spiral.
 #   2. Why 20G: MemAvailable read 12.2G in the last sample before the box died and
 #      never crossed the old 12G floor. 20G matches
-#      spark-bench/serving/preflight.sh.
+#      serving/preflight.sh.
 #
 # The real danger signature is not "free memory is low" but "there is nothing left
 # to reclaim" — which is exactly what MemAvailable measures.
@@ -60,7 +60,7 @@ install -m 0755 /dev/stdin /usr/local/bin/gpu-mem-guard.sh <<'DAEMON'
 # instead. If every GPU process is exempt the guard logs and does nothing —
 # at that point the fix is headroom (a smaller quant), not a kill.
 #
-# Test hooks (exercised by spark-bench/tests/test_mem_guard.py):
+# Test hooks (exercised by tests/test_mem_guard.py):
 #   GPU_GUARD_MEMINFO=path   read memory stats from a file instead of /proc
 #   GPU_GUARD_ONESHOT=1      evaluate once and exit
 #   GPU_GUARD_DRY_RUN=1      report the decision, never kill

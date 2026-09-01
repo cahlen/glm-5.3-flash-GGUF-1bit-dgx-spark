@@ -1,10 +1,12 @@
 """Unit tests for the agentic scenario checks.
 
 Every verdict function is exercised against a hand-built good response and at
-least one realistic failure, with no server involved. results/BENCHDAY.md is the
-reason this exists: the 2026-07-23 tool-call numbers were shaped by harness bugs
-that nothing tested, and a check that silently always-passes is worse than no
-check at all.
+least one realistic failure, with no server involved.
+
+This exists because an earlier tool-call benchmark on this hardware produced
+numbers that were shaped by harness bugs nothing tested. A check that silently
+always-passes is worse than no check at all — two of these tests caught real
+bugs in the verdict functions on the day they were written.
 """
 
 import json

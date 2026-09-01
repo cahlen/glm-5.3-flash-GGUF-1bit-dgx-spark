@@ -1,6 +1,6 @@
 """Shared helpers for the GLM-5.3 benches.
 
-Trimmed from the spark-bench harness to just what these two benches need:
+Trimmed to just what these two benches need:
 somewhere to put a result, and a way to wait for the server to come up.
 """
 
