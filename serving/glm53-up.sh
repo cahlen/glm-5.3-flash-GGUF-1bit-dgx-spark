@@ -25,10 +25,13 @@ ENV_FILE="${ENV_FILE:-$DIR/glm53.env}"
 _preset="$(env | grep -o '^GLM53_[A-Z0-9_]*' || true)"
 declare -A _keep
 for k in $_preset; do _keep[$k]="${!k}"; done
-# ENV_FILE is configurable by design, so there is no constant path for
-# shellcheck to follow. The directive must sit immediately before the `.`
-# itself — on a compound `set -a; . file; set +a` line it would attach to
-# `set -a` and silently do nothing.
+# ENV_FILE is configurable by design, so its path is not a constant the linter
+# can follow. The suppressing directive must sit immediately before the `.`
+# itself: on a compound `set -a; . file; set +a` line a directive attaches to
+# `set -a` and silently does nothing.
+#
+# (Careful when editing the prose above: a comment line that STARTS with the
+# linter's name is parsed as a directive and fails the build.)
 set -a
 # shellcheck source=/dev/null
 . "$ENV_FILE"

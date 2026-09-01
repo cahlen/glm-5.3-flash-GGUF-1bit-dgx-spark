@@ -20,8 +20,8 @@ ENV_FILE="${ENV_FILE:-$DIR/glm53.env}"
 _preset="$(env | grep -o '^GLM53_[A-Z0-9_]*' || true)"
 declare -A _keep
 for k in $_preset; do _keep[$k]="${!k}"; done
-# ENV_FILE is configurable by design, so there is no constant path for
-# shellcheck to follow; the directive has to sit on the `.` line itself.
+# ENV_FILE is configurable by design, so its path is not a constant the linter
+# can follow; the suppressing directive has to sit on the `.` line itself.
 if [ -r "$ENV_FILE" ]; then
   set -a
   # shellcheck source=/dev/null

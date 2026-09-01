@@ -1,0 +1,15 @@
+Stop a wrapped prose comment from being parsed as a lint directive
+
+The previous commit's explanatory comment wrapped onto a line beginning with
+"# shellcheck to follow...". A comment starting with that word IS a directive,
+so the linter tried to parse "to follow." as a key=value pair and failed the
+build with SC1072/SC1073 — an error in a comment explaining how to avoid errors
+in comments.
+
+Reworded both blocks to say "the linter" in the prose and to reserve the literal
+directive word for actual directives, with a note warning the next editor.
+
+No behaviour change: DRY_RUN output and the env-override precedence are
+unchanged, and pytest is unaffected.
+
+Co-Authored-By: Claude Opus 5 (1M context) <noreply@anthropic.com>
