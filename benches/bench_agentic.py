@@ -57,7 +57,7 @@ def _extract(resp):
 
 def run_scenario(client, base_url, scenario, *, model, trials, timeout,
                  reasoning_effort=None, temperature=None, top_p=None,
-                 max_tokens=8192):
+                 min_p=None, top_k=None, max_tokens=8192):
     results = []
     for i in range(trials):
         body = {
@@ -74,6 +74,13 @@ def run_scenario(client, base_url, scenario, *, model, trials, timeout,
             body["temperature"] = temperature
         if top_p is not None:
             body["top_p"] = top_p
+        # llama.cpp defaults min_p=0.05 and top_k=40 and applies them ON TOP of
+        # top_p. Zhipu/Unsloth's llama.cpp guidance is --min-p 0.01, so the
+        # default truncates 5x harder than the model's authors recommend.
+        if min_p is not None:
+            body["min_p"] = min_p
+        if top_k is not None:
+            body["top_k"] = top_k
         if reasoning_effort:
             # GLM-5.3 reads reasoning_effort out of the chat template kwargs.
             body["chat_template_kwargs"] = {"reasoning_effort": reasoning_effort}
@@ -124,6 +131,10 @@ def main():
                     help="passed as chat_template_kwargs.reasoning_effort")
     ap.add_argument("--temperature", type=float, default=None)
     ap.add_argument("--top-p", type=float, default=None)
+    ap.add_argument("--min-p", type=float, default=None,
+                    help="llama.cpp default is 0.05; zai-org/Unsloth recommend 0.01")
+    ap.add_argument("--top-k", type=int, default=None,
+                    help="llama.cpp default is 40; not specified by the model authors")
     # 8192, not 2048: GLM-5.3 at the default Max reasoning effort routinely
     # spends >2000 tokens in <think> before emitting any content. At 2048 a
     # trivial "write binary_search" returned finish_reason=length with an empty
@@ -146,6 +157,7 @@ def main():
                 model=args.model, trials=args.trials, timeout=args.timeout,
                 reasoning_effort=args.reasoning_effort,
                 temperature=args.temperature, top_p=args.top_p,
+                min_p=args.min_p, top_k=args.top_k,
                 max_tokens=args.max_tokens,
             )
             passed = sum(1 for t in trials if t["ok"])
@@ -203,6 +215,8 @@ def main():
         "reasoning_effort": args.reasoning_effort,
         "temperature": args.temperature,
         "top_p": args.top_p,
+        "min_p": args.min_p,
+        "top_k": args.top_k,
         "scenarios_fully_passed": scen_pass,
         "scenarios_total": len(scenarios),
         "trial_pass_rate": round(total_pass / total_trials, 3) if total_trials else None,
