@@ -1,0 +1,19 @@
+# Model weights — ~87 GiB of GGUF shards. Fetch with `hf download`; the exact
+# repo, quant and filenames are pinned in serving/glm53.env and the README.
+*.gguf
+*.gguf.incomplete
+models/
+
+# llama.cpp checkout + build (~2 GB). Reproduced by serving/glm53-build.sh,
+# which pins repo, branch and commit.
+llama.cpp*/
+third_party/
+
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+
+.DS_Store
+*.swp

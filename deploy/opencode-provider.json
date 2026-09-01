@@ -1,0 +1,57 @@
+{
+  "_comment": [
+    "Merge the 'provider', 'model' and 'small_model' keys below into",
+    "~/.config/opencode/opencode.json on the CLIENT machine (OpenCode runs on the",
+    "workstation, not on the Spark). Replace the baseURL host with your Spark's",
+    "Tailscale IP or hostname.",
+    "",
+    "limit.context is 114688 = the server's 131072 minus the 16384 output budget.",
+    "llama.cpp runs --parallel 1, so one slot holds prompt + generation, and",
+    "context shift is disabled by default: overflowing the window is a hard error",
+    "mid-run, not a silent truncation. Reserving the output keeps OpenCode",
+    "compacting before the server refuses.",
+    "",
+    "The default model deliberately sets NO reasoning_effort. The GLM-5.3 chat",
+    "template honours only 'low' and 'high'; anything else — including the literal",
+    "string 'max' — falls through to 'max'. Omitting the key IS how you ask for",
+    "Max, which is what autonomous planning and tool selection need. Pinning it to",
+    "'low' globally starves exactly those turns.",
+    "",
+    "glm-5.3-flash-low is the opt-in cheap lane for long straight code emission,",
+    "and is what small_model (titles, summaries) uses."
+  ],
+  "provider": {
+    "spark-glm": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "DGX Spark - GLM-5.3-Flash",
+      "options": {
+        "baseURL": "http://YOUR-SPARK-HOST:8090/v1",
+        "apiKey": "EMPTY"
+      },
+      "models": {
+        "glm-5.3-flash": {
+          "name": "GLM-5.3-Flash UD-IQ1_S + MTP (reasoning: max)",
+          "tool_call": true,
+          "reasoning": true,
+          "temperature": true,
+          "limit": { "context": 114688, "output": 16384 },
+          "options": { "temperature": 1.0, "topP": 0.95 }
+        },
+        "glm-5.3-flash-low": {
+          "name": "GLM-5.3-Flash UD-IQ1_S + MTP (reasoning: low)",
+          "tool_call": true,
+          "reasoning": true,
+          "temperature": true,
+          "limit": { "context": 114688, "output": 16384 },
+          "options": {
+            "temperature": 1.0,
+            "topP": 0.95,
+            "chat_template_kwargs": { "reasoning_effort": "low" }
+          }
+        }
+      }
+    }
+  },
+  "model": "spark-glm/glm-5.3-flash",
+  "small_model": "spark-glm/glm-5.3-flash-low"
+}

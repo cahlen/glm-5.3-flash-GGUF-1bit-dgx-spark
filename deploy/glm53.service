@@ -1,0 +1,30 @@
+[Unit]
+Description=GLM-5.3-Flash (llama.cpp + NextN/MTP self-speculation) on DGX Spark
+Documentation=file:///home/cahlen/dev/glm53-dgx-spark/README.md
+After=network-online.target
+
+[Service]
+Type=simple
+# Every tunable — context, quant, KV type, MTP depth, sampling, reasoning — lives
+# in serving/glm53.env. Do not add flags here; add them there, so the launch this
+# unit performs and the launch mtp-sweep.sh performs stay identical.
+ExecStart=/home/cahlen/dev/glm53-dgx-spark/serving/glm53-up.sh
+
+Restart=always
+RestartSec=10
+
+# This server was SIGKILLed 9 times on 2026-08-31 by gpu-mem-guard.service, which
+# picks the largest GPU process when MemAvailable drops under its floor — and a
+# 90 GiB resident model is always the largest. The guard now skips units listed in
+# GPU_GUARD_EXEMPT_UNITS (default glm53.service) and kills the next-biggest
+# instead. If this unit is ever renamed, update that list or the kill loop returns.
+#
+# OOMScoreAdjust only affects the kernel OOM killer, which was never the cause
+# here; it is set low anyway so the kernel prefers this process over sshd.
+OOMScoreAdjust=200
+
+StandardOutput=append:/home/cahlen/glm53-server.log
+StandardError=append:/home/cahlen/glm53-server.log
+
+[Install]
+WantedBy=default.target
