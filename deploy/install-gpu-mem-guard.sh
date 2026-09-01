@@ -10,7 +10,7 @@
 # floor, SIGKILLs the single biggest GPU-memory process -> frees the unified
 # memory and keeps the host loginable. Also marks sshd/tailscaled/lxd OOM-immune.
 #
-#   RUN AS:  sudo bash /home/cahlen/install-gpu-mem-guard.sh   (on the host)
+#   RUN AS:  sudo bash ~/install-gpu-mem-guard.sh   (on the host)
 #   Floor:   GPU_GUARD_FLOOR_GB=20 sudo -E bash ...   (default 20 GB)
 # =============================================================================
 set -euo pipefail
@@ -18,7 +18,7 @@ set -euo pipefail
 FLOOR_GB="${GPU_GUARD_FLOOR_GB:-20}"
 # Units the guard must never kill. The intended resident model server is not a
 # runaway job; killing it is an outage, not a save. See the DAEMON header for
-# the 2026-08-31 incident (7 SIGKILLs of glm53.service in under two hours).
+# the 2026-08-31 incident (11 SIGKILLs of glm53.service in under three hours).
 EXEMPT_UNITS="${GPU_GUARD_EXEMPT_UNITS:-glm53.service}"
 command -v nvidia-smi >/dev/null || { echo "ERROR: nvidia-smi not found on host"; exit 1; }
 
@@ -53,7 +53,7 @@ install -m 0755 /dev/stdin /usr/local/bin/gpu-mem-guard.sh <<'DAEMON'
 # EXEMPTIONS (added 2026-08-31). The guard exists to stop a *runaway* job from
 # wedging the host. The intended resident model server is not a runaway job, and
 # killing it is not a safe fallback — it is an outage. On 2026-08-31 this guard
-# SIGKILLed glm53.service seven times between 12:10 and 14:07 (status=9/KILL, no
+# SIGKILLed glm53.service eleven times between 12:10 and 14:53 (status=9/KILL, no
 # core, no llama.cpp fault), because a 90G resident model legitimately parks
 # MemAvailable near the floor and every long prompt pushed it under. Units named
 # in GPU_GUARD_EXEMPT_UNITS are skipped; the next-biggest GPU process is killed

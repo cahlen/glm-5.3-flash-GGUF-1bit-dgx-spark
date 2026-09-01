@@ -56,6 +56,15 @@ loginctl enable-linger "$USER"
 Edit [`serving/glm53.env`](serving/glm53.env) and `systemctl --user restart
 glm53` to change anything. The unit contains no flags.
 
+Paths are portable: `glm53.env` uses `${HOME}`, and `deploy/glm53.service` uses
+systemd's `%h` specifier, so nothing is pinned to one account. Both assume the
+repo is at `~/dev/glm53-dgx-spark` and the weights at `~/models/...`; change
+`GLM53_MODEL` / `GLM53_BIN` and the unit's `ExecStart` if you put them elsewhere.
+
+Everything here targets **one** machine shape: a single GB10 with ~128 GB of
+unified memory. The context and quant conclusions are specific to that; the
+watchdog, MTP-depth and `reasoning_effort` findings generalise further.
+
 ---
 
 ## Findings
@@ -93,14 +102,41 @@ Only **12 of the 46 blocks carry attention KV**. `head_count_kv` is a per-layer
 array that is `0` for the other 34 — those are linear-attention layers whose
 recurrent state does not grow with context.
 
-| KV | cost |
-|---|---|
-| 49K @ f16 | 1.2 GiB |
-| **131K @ q8_0** | **1.7 GiB** |
-| 262K @ q8_0 | 3.3 GiB |
+Resident memory, measured with `nvidia-smi --query-compute-apps` after load:
 
-Going 49K → 128K cost **+2.0 GiB total and 0% throughput**. If you are running
-this model at a small context to "save memory", you are saving almost nothing.
+| config | resident | delta |
+|---|---|---|
+| 49K, f16 | 88.94 GiB | — |
+| 128K, f16 | 91.28 GiB | **+2.34** — 2.7× the context |
+| 128K, q8_0 | 90.97 GiB | −0.32 — quantizing the KV |
+| 256K, q8_0 | 94.25 GiB | +3.28 |
+
+**2.7× the context costs 2.34 GiB and 0% throughput.** If you are running this
+model at a small context to save memory, you are saving almost nothing — the
+86.7 GiB of weights is the entire budget.
+
+### 2b. q8_0 vs f16 KV barely matters here — pick either
+
+A corollary of the above: if the KV cache is small, quantizing it saves little.
+Measured at matched settings (128K, MTP depth 2, 3 trials per scenario):
+
+| | q8_0 | f16 |
+|---|---|---|
+| resident | **90.97 GiB** | 91.28 GiB |
+| decode | 27.75 tok/s | 27.86 tok/s |
+| MTP acceptance | 0.640 | 0.633 |
+| agentic strict | 22/30 | 22/30 |
+| agentic lenient | 25/30 | 26/30 |
+
+**No measurable difference in speed or quality**; q8_0 saves 0.32 GiB (0.35%).
+This repo defaults to q8_0 because the saving is real and free, but **f16 is an
+equally valid choice and is the safer one if your llama.cpp was built without
+the q8_0 flash-attention kernels** (`GGML_CUDA_FA_ALL_QUANTS=OFF` ships f16/f16,
+q8_0/q8_0 and q4_0/q4_0; anything more exotic needs `=ON`).
+
+Do not generalise this to models with conventional attention — there, KV
+quantization is a large win. It is small *here* because 34 of 46 layers keep no
+KV at all.
 
 ### 3. MTP draft depth 2 beats llama.cpp's default of 3
 
@@ -233,12 +269,24 @@ make mtp-sweep   # draft-depth sweep
 | `serving/glm53-up.sh` | builds the command line; what the unit execs |
 | `serving/glm53-health.sh` | health check incl. the required-tool-call contract |
 | `serving/glm53-build.sh` | reproducible llama.cpp build, pinned to the commit |
+| `serving/preflight.sh` | refuses a manual launch with no headroom (`GLM53_PREFLIGHT=1`) |
 | `serving/mtp-sweep.sh` | MTP draft-depth sweep |
 | `benches/agentic_spec.py` | the 10 scenarios + verdict functions |
 | `benches/bench_agentic.py` | runs them; separates serving from model failures |
 | `benches/bench_mtp.py` | decode t/s + MTP acceptance from server timings |
 | `deploy/` | host-level files (watchdog, systemd unit, OpenCode provider) |
 | `results/` | raw JSON behind every number above |
+| `LICENSE` | MIT |
+
+## License
+
+MIT — see [LICENSE](LICENSE).
+
+The pinned llama.cpp fork and the GGUF weights are third-party and carry their
+own licences: [unslothai/llama.cpp](https://github.com/unslothai/llama.cpp) (MIT,
+following upstream ggml-org/llama.cpp) and
+[unsloth/GLM-5.3-Flash-GGUF](https://huggingface.co/unsloth/GLM-5.3-Flash-GGUF)
+(MIT, per its model card). Neither is vendored here.
 
 ## Provenance
 

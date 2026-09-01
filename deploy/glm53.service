@@ -1,14 +1,17 @@
 [Unit]
 Description=GLM-5.3-Flash (llama.cpp + NextN/MTP self-speculation) on DGX Spark
-Documentation=file:///home/cahlen/dev/glm53-dgx-spark/README.md
+Documentation=file://%h/dev/glm53-dgx-spark/README.md
 After=network-online.target
 
 [Service]
 Type=simple
+# %h is the systemd specifier for the user's home directory, so this unit is
+# portable across accounts. It assumes the repo is cloned to
+# ~/dev/glm53-dgx-spark; adjust the path if you clone elsewhere.
 # Every tunable — context, quant, KV type, MTP depth, sampling, reasoning — lives
 # in serving/glm53.env. Do not add flags here; add them there, so the launch this
 # unit performs and the launch mtp-sweep.sh performs stay identical.
-ExecStart=/home/cahlen/dev/glm53-dgx-spark/serving/glm53-up.sh
+ExecStart=%h/dev/glm53-dgx-spark/serving/glm53-up.sh
 
 Restart=always
 RestartSec=10
@@ -23,8 +26,8 @@ RestartSec=10
 # here; it is set low anyway so the kernel prefers this process over sshd.
 OOMScoreAdjust=200
 
-StandardOutput=append:/home/cahlen/glm53-server.log
-StandardError=append:/home/cahlen/glm53-server.log
+StandardOutput=append:%h/glm53-server.log
+StandardError=append:%h/glm53-server.log
 
 [Install]
 WantedBy=default.target
