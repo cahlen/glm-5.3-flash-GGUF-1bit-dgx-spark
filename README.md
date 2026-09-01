@@ -159,6 +159,56 @@ MTP is genuinely active, not stubbed: every response carries
 `timings.draft_n` / `draft_n_accepted`, and the off-arm reports `drafted=0`, so
 "MTP disabled" can never be confused with "MTP enabled but never accepting".
 
+### 3b. Stacking speculation types makes it worse, and n-grams alone do nothing
+
+`--spec-type` takes a comma-separated **list**, so speculation strategies can be
+combined, and the five `ngram-*` types need no draft model at all (only
+`mtp`/`eagle3`/`dflash`/`dspark` download a sidecar). Adding one therefore costs
+no memory — measured, all stacked arms load at exactly 90.8 GiB. It is a free
+experiment, so it is worth knowing that it does not pay.
+
+Swept with `serving/spec-sweep.sh`, 3 reps x 4 workloads:
+
+| `--spec-type` | decode | acceptance | resident |
+|---|---|---|---|
+| **`draft-mtp`** | **26.90** | **0.625** | 90.8 GiB |
+| `draft-mtp,ngram-map-k` | 26.46 | 0.559 | 90.8 GiB |
+| `draft-mtp,ngram-cache` | 26.17 | 0.595 | 90.8 GiB |
+| `draft-mtp,ngram-simple` | 25.66 | 0.537 | 90.8 GiB |
+| `draft-mtp,ngram-mod` | 25.46 | 0.505 | 90.8 GiB |
+| `ngram-mod` alone | **18.58** | 0.267 | 87.0 GiB |
+
+Two things worth reading off this.
+
+**Stacking dilutes acceptance.** Tokens drafted rises from ~1600 to ~2350 while
+acceptance falls from 0.73 to ~0.50: the n-gram layer contributes drafts the
+model then rejects, so you pay verification cost for tokens you throw away.
+MTP's learned NextN head is simply a better predictor than prompt lookup here.
+
+**Prompt-lookup speculation is worth nothing on this workload.** `ngram-mod`
+alone measures **18.58 tok/s against 18.73 with speculation switched off
+entirely** — the wasted drafts exactly cancel the gain. Agentic output is not as
+repetitive as n-gram speculation assumes. It does save 3.8 GiB by not loading
+the NextN heads, but giving up 31% of decode to reclaim memory we are not short
+of is the wrong trade.
+
+`draft-mtp` alone is what this repo ships, and nothing tried beat it.
+
+### 3c. The noise floor is about 3%
+
+Two runs of the *identical* speculation config (`draft-mtp`, depth 2) taken hours
+apart measured **27.75** and **26.90** tok/s. That ~3% spread is the measurement
+floor for decode on this box, and it is the number that decides which comparisons
+above mean anything:
+
+- `+ngram-map-k` at −1.6% is **inside** the floor — not better, but not shown worse
+- `+ngram-mod` at −5.4% and `+ngram-simple` at −4.6% clear it — genuinely worse
+- depth 2 over depth 3 at +5.9% clears it — that conclusion holds
+
+Treat any single-digit-percent decode difference in this repo as unproven unless
+it clears roughly 3%, and any tool-call difference as unproven unless it survives
+a re-run at higher n — see the `min_p` episode in section 5b.
+
 ### 4. `reasoning_effort` only accepts `low` and `high`
 
 Straight from the chat template embedded in the GGUF:
@@ -237,6 +287,47 @@ The wider lesson, recorded because it nearly went the other way: a 5-trial
 signal was about to be used to rewrite the "known model behaviours" table below
 and declare scenario 06 fixed. Twelve trials said otherwise. **n=5 is not
 evidence at this effect size.**
+
+### 5c. `ubatch` 512: prefill keeps scaling, but 1024 breaks the watchdog
+
+`--ubatch-size` is the physical batch used for prompt processing. Swept with
+`serving/ubatch-sweep.sh`, 2 reps per depth, fresh nonce per prompt:
+
+| ubatch | resident | MemAvailable | prefill @4k | @16k | @64k | decode |
+|---|---|---|---|---|---|---|
+| 128 | 89.53 GiB | 23.2 | 136 | 153 | 139 | 27.78 |
+| 256 | 89.96 GiB | 23.3 | 200 | 216 | 180 | 25.92 |
+| **512** | **90.83 GiB** | **22.0** | **283** | **282** | **215** | **27.43** |
+| 1024 | 92.35 GiB | **19.4** | 360 | 343 | 243 | ~28 |
+
+Two findings, one of which contradicts the reason the sweep was run.
+
+**Prefill never plateaus.** This was set up expecting to find memory savings by
+going *down*; instead every doubling buys 13–27% more prefill, and 1024 is still
+climbing. 512 is not an over-large default — if anything it is conservative.
+
+**Decode is untouched**, as theory predicts: `ubatch` governs prompt processing,
+not generation. The 25.92 at ubatch 256 tracks that arm's lower MTP acceptance
+(0.593), not the batch size, and sits inside the ~3% noise floor besides.
+
+**512 stays the default anyway, and the reason is the watchdog, not throughput.**
+1024 costs 1.52 GiB and puts MemAvailable at 19.4 GiB — permanently *below*
+`gpu-mem-guard`'s 20 GiB floor. The server is exempt so it would not be killed,
+but the guard would log `LOW MEM` every 3 seconds forever, and an alarm that is
+always firing is an alarm nobody reads. Losing the ability to detect a real
+memory event is a worse outcome than 27% slower prefill on cache misses —
+especially since llama.cpp reuses prompt prefixes, so prefill cost falls mainly
+on genuinely new content rather than on every turn.
+
+Set `GLM53_UBATCH=1024` if your workload is prefill-dominated and you accept
+that trade. Anything above 1024 would need the guard floor moved first.
+
+**Note on the numbers above:** `bench_prefill.py` flags a run when a material
+share of a prompt came from cache. On this sweep it fired on *every* arm — but
+the cause was `cache_n = 9` on each request, the shared chat-template prefix,
+which is 0.01% of a 73k prompt and identical across arms. The guard now
+thresholds on a fraction (1%) rather than `> 0`, because a check that fires on
+every run is one nobody heeds. The measurements themselves are uncontaminated.
 
 ### 6. Quant ceiling on 128 GB
 

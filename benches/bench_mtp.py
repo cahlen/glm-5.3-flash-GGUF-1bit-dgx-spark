@@ -96,6 +96,18 @@ def main():
 
     wait_ready(args.base_url)
 
+    # Ask the server what speculation it is actually running, instead of
+    # inferring it from --label. A mislabelled arm is how a sweep silently
+    # compares a config against itself.
+    spec_type = "unknown"
+    try:
+        import httpx as _h
+        pr = _h.get(args.base_url.rsplit("/v1", 1)[0] + "/props", timeout=10.0).json()
+        spec_type = (pr.get("default_generation_settings", {})
+                       .get("params", {}).get("speculative.types") or "unknown")
+    except Exception:
+        pass
+
     per_workload = {}
     all_decode, all_draft, all_acc = [], 0, 0
     with httpx.Client() as client:
@@ -136,12 +148,18 @@ def main():
         "total_drafted": all_draft,
         "total_accepted": all_acc,
         "overall_acceptance": round(all_acc / all_draft, 4) if all_draft else None,
-        "mtp_active": all_draft > 0,
+        # "did speculation draft anything", NOT "is MTP specifically running".
+        # --spec-type takes a list and the ngram-* strategies draft without MTP,
+        # so an ngram-only run legitimately has drafts and no MTP. Naming this
+        # mtp_active printed "MTP active: True" for an arm with no NextN head
+        # loaded, which is exactly the confusion this bench exists to prevent.
+        "speculation_active": all_draft > 0,
+        "spec_type": spec_type,
         "workloads": per_workload,
     }
     print()
     print(f"decode median  : {payload['decode_tok_s_median']} tok/s")
-    print(f"MTP active     : {payload['mtp_active']}")
+    print(f"spec active    : {payload['speculation_active']}  ({spec_type})")
     print(f"acceptance     : {payload['overall_acceptance']}")
     if not args.no_save:
         print(f"saved: {save_result(f'mtp-{args.label}', payload)}")
