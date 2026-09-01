@@ -101,13 +101,18 @@ def test_draft_model_is_not_emitted_even_via_extra():
 
 # ------------------------------------------------------------------ reasoning
 
-def test_reasoning_effort_is_unset_by_default():
-    """Unset == template default == Max, which is what agentic work needs.
+def test_reasoning_effort_ships_high_not_max():
+    """'high' measured better than Max for agentic tool use, twice.
 
-    The template only honours 'low' and 'high'; anything else falls through to
-    'max'. Passing nothing is therefore the correct way to ask for Max.
+    The template honours only 'low' and 'high'; anything else (including the
+    literal "max") falls through to 'max', so an UNSET value means Max. This
+    repo used to ship unset on the assumption that more deliberation helps
+    planning. Measurement disagreed — Max 38/50 vs high 44/50 on the full suite,
+    reproduced at 16/24 vs 21/24 on a focused 12-trial re-run — so the value is
+    now set explicitly.
     """
-    assert "--reasoning-effort" not in dry()
+    out = dry()
+    assert "--reasoning-effort high" in out, "should ship high, measured better than Max"
 
 
 def test_reasoning_effort_can_be_set_per_deployment():

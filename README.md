@@ -219,11 +219,36 @@ Straight from the chat template embedded in the GGUF:
 ```
 
 Any other value — **including the literal string `"max"`** — falls through to
-`'max'`. So **leaving it unset is how you ask for Max**, which is the right
-default for autonomous work. Measured: unset → 5374 reasoning chars; `low` → 35.
+`'max'`, so an **unset** value means Max. Measured: unset → 5374 reasoning
+chars; `low` → 35.
 
-Do **not** pin `low` globally; it starves the planning and tool-selection turns
-that need reasoning most. Expose it per request instead:
+**This repo ships `high`, not Max — and that reversed the original assumption.**
+More deliberation was supposed to mean better planning and tool selection. It
+measured worse:
+
+| `reasoning_effort` | full suite (5 trials) | focused re-run (12 trials) |
+|---|---|---|
+| unset (Max) | 38/50 strict | 16/24 |
+| **`high`** | **44/50** | **21/24** |
+| `low` | 43/50 | — |
+
+Same direction in both runs, and the confirmation *strengthened* the effect
+(p≈0.12 → ≈0.087) instead of dissolving it the way the `min_p` false positive
+did — which is the only reason it was acted on. The failure mode is legible: on
+a task whose file contents were already inline in the prompt, Max talked itself
+into calling `read_file` "to verify" before patching. Extra caution on a task
+with an unambiguous correct action is just a wasted turn. `high` is cheaper too,
+being fewer reasoning tokens.
+
+The honest caveat: p≈0.087 is suggestive, not conclusive. It is acted on because
+it reproduced, the direction never flipped, and switching costs nothing.
+
+**Tool-call safety is not affected by this knob at all.** Zero
+`tool_choice=required` violations at Max, `high` *and* `low`, across every arm —
+so the low-reasoning lane is safe to use, it simply is not the agent default.
+
+Do **not** pin `low` globally; it starves the planning turns. Expose it per
+request instead:
 
 ```json
 {"chat_template_kwargs": {"reasoning_effort": "low"}}
