@@ -17,3 +17,9 @@ __pycache__/
 
 .DS_Store
 *.swp
+
+# Scratch commit-message files. A `git add -A` before committing will happily
+# stage these; .cm was committed and shipped once before this rule existed.
+.cm
+.commitmsg
+*.commitmsg
