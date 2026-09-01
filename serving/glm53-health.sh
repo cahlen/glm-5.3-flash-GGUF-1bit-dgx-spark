@@ -20,7 +20,14 @@ ENV_FILE="${ENV_FILE:-$DIR/glm53.env}"
 _preset="$(env | grep -o '^GLM53_[A-Z0-9_]*' || true)"
 declare -A _keep
 for k in $_preset; do _keep[$k]="${!k}"; done
-[ -r "$ENV_FILE" ] && { set -a; . "$ENV_FILE"; set +a; }
+# ENV_FILE is configurable by design, so there is no constant path for
+# shellcheck to follow; the directive has to sit on the `.` line itself.
+if [ -r "$ENV_FILE" ]; then
+  set -a
+  # shellcheck source=/dev/null
+  . "$ENV_FILE"
+  set +a
+fi
 for k in "${!_keep[@]}"; do export "$k=${_keep[$k]}"; done
 
 PORT="${GLM53_PORT:-8090}"

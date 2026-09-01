@@ -4,7 +4,9 @@ set -uo pipefail
 export PATH="$HOME/.local/bin:$PATH"
 LABEL="${1:?label}"
 TRIALS="${2:-3}"
-cd "$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+# || exit matters here: this script runs `set -uo pipefail` without -e, so an
+# unchecked cd would silently continue and bench whatever directory it landed in.
+cd "$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)" || exit 1
 echo "===== $LABEL start $(date -u +%FT%TZ) ====="
 echo "--- config in force ---"
 curl -s --max-time 10 http://127.0.0.1:8090/props | python3 -c 'import sys,json;d=json.load(sys.stdin);print("n_ctx",d["default_generation_settings"]["n_ctx"])' 2>&1

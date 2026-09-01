@@ -25,8 +25,14 @@ ENV_FILE="${ENV_FILE:-$DIR/glm53.env}"
 _preset="$(env | grep -o '^GLM53_[A-Z0-9_]*' || true)"
 declare -A _keep
 for k in $_preset; do _keep[$k]="${!k}"; done
-# shellcheck disable=SC1090
-set -a; . "$ENV_FILE"; set +a
+# ENV_FILE is configurable by design, so there is no constant path for
+# shellcheck to follow. The directive must sit immediately before the `.`
+# itself — on a compound `set -a; . file; set +a` line it would attach to
+# `set -a` and silently do nothing.
+set -a
+# shellcheck source=/dev/null
+. "$ENV_FILE"
+set +a
 for k in "${!_keep[@]}"; do export "$k=${_keep[$k]}"; done
 
 req() { [ -n "${!1:-}" ] || { echo "glm53-up: $1 is not set in $ENV_FILE" >&2; exit 1; }; }
