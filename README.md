@@ -199,6 +199,45 @@ Measured here, same server, only `top_p` varied, 5 trials:
 
 `top_p 1.0` produced duplicate `run_shell` calls.
 
+### 5b. Declare `min_p` and `top_k` — llama.cpp applies them either way
+
+`llama-server` defaults to `min_p=0.05` and `top_k=40` and applies both **on top
+of** whatever `top_p` you set. A config that mentions only temperature and
+top_p is not running "just those two" — it is running four samplers, two of
+which it never chose and which can change between llama.cpp versions.
+
+This repo sets them explicitly:
+
+```
+--temp 1.0 --top-p 0.95 --min-p 0.01 --top-k 0
+```
+
+`min_p 0.01` is Zhipu's and Unsloth's documented llama.cpp line for GLM-5.3.
+`top_k` is specified by neither, so it is disabled rather than left at 40.
+
+**Measured, and the honest answer is that the values barely matter.** Three
+arms, 50 trials each, identical server:
+
+| min_p | top_k | strict | lenient |
+|---|---|---|---|
+| 0.05 | 40 | 0.78 | 0.88 |
+| 0.01 | 40 | 0.84 | 0.88 |
+| **0.01** | **0** | **0.86** | **0.90** |
+
+The trend is monotonic but **not significant** (39/50 vs 43/50, p≈0.30). A
+focused 12-trial re-run of the two scenarios that appeared to move found no
+effect at all — scenario 06 scored **7/12 either way**. The 3/5→5/5 that looked
+like a fix in the 5-trial run was noise.
+
+So this change is made for **provenance, not performance**: it matches the model
+authors' guidance and pins behaviour against llama.cpp changing its defaults.
+It is not a speedup and not a quality win, and the repo should not claim it is.
+
+The wider lesson, recorded because it nearly went the other way: a 5-trial
+signal was about to be used to rewrite the "known model behaviours" table below
+and declare scenario 06 fixed. Twelve trials said otherwise. **n=5 is not
+evidence at this effect size.**
+
 ### 6. Quant ceiling on 128 GB
 
 | quant | weights | resident @128K | MemAvailable |

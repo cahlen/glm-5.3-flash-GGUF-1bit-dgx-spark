@@ -61,7 +61,9 @@ CMD=(
   --ubatch-size "${GLM53_UBATCH:-512}"
   --jinja
   --temp "${GLM53_TEMP:-1.0}"
-  --top-p "${GLM53_TOP_P:-1.0}"
+  --top-p "${GLM53_TOP_P:-0.95}"
+  --min-p "${GLM53_MIN_P:-0.01}"
+  --top-k "${GLM53_TOP_K:-0}"
 )
 
 # MTP. Deliberately omitted entirely when 'none' so the nextn heads are not even
@@ -87,7 +89,8 @@ esac
 
 echo "glm53-up: model=$(basename "$GLM53_MODEL")"
 echo "glm53-up: ctx=$GLM53_CTX kv=${GLM53_CACHE_TYPE_K}/${GLM53_CACHE_TYPE_V} spec=${GLM53_SPEC_TYPE:-none} n_max=${GLM53_SPEC_DRAFT_N_MAX:-} port=$GLM53_PORT"
-echo "glm53-up: effort=${GLM53_REASONING_EFFORT:-<template default: Max>} preserve=${GLM53_REASONING_PRESERVE:-on} temp=${GLM53_TEMP:-1.0} top_p=${GLM53_TOP_P:-1.0}"
+echo "glm53-up: effort=${GLM53_REASONING_EFFORT:-<template default: Max>} preserve=${GLM53_REASONING_PRESERVE:-on}"
+echo "glm53-up: temp=${GLM53_TEMP:-1.0} top_p=${GLM53_TOP_P:-0.95} min_p=${GLM53_MIN_P:-0.01} top_k=${GLM53_TOP_K:-0}"
 
 if [ "${DRY_RUN:-0}" = "1" ]; then
   printf '%q ' "${CMD[@]}"; echo

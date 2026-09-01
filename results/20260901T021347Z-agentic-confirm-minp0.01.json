@@ -1,0 +1,415 @@
+{
+  "label": "confirm-minp0.01",
+  "base_url": "http://127.0.0.1:8090/v1",
+  "model": "glm-5.3-flash",
+  "trials_per_scenario": 12,
+  "reasoning_effort": null,
+  "temperature": 1.0,
+  "top_p": 0.95,
+  "min_p": 0.01,
+  "top_k": 0,
+  "scenarios_fully_passed": 0,
+  "scenarios_total": 2,
+  "trial_pass_rate": 0.667,
+  "trial_pass_rate_lenient": 1.0,
+  "required_zero_call_violations": 0,
+  "results": {
+    "06_large_tool_set": {
+      "kind": "tool",
+      "tool_choice": "auto",
+      "expect_tool": "grep",
+      "passed": 7,
+      "trials": 12,
+      "pass_rate": 0.583,
+      "passed_lenient": 12,
+      "pass_rate_lenient": 1.0,
+      "median_latency_s": 1.41,
+      "required_zero_call_violations": 0,
+      "detail": [
+        {
+          "trial": 0,
+          "ok": true,
+          "reason": "ok",
+          "transport_error": false,
+          "latency_s": 1.03,
+          "n_tool_calls": 1,
+          "tool_names": [
+            "grep"
+          ],
+          "completion_tokens": 23,
+          "prompt_tokens": 1122,
+          "text_head": "",
+          "finish_reason": "tool_calls"
+        },
+        {
+          "trial": 1,
+          "ok": true,
+          "reason": "ok",
+          "transport_error": false,
+          "latency_s": 0.52,
+          "n_tool_calls": 1,
+          "tool_names": [
+            "grep"
+          ],
+          "completion_tokens": 12,
+          "prompt_tokens": 1122,
+          "text_head": "",
+          "finish_reason": "tool_calls"
+        },
+        {
+          "trial": 2,
+          "ok": true,
+          "reason": "ok",
+          "transport_error": false,
+          "latency_s": 1.44,
+          "n_tool_calls": 1,
+          "tool_names": [
+            "grep"
+          ],
+          "completion_tokens": 42,
+          "prompt_tokens": 1122,
+          "text_head": "",
+          "finish_reason": "tool_calls"
+        },
+        {
+          "trial": 3,
+          "ok": false,
+          "reason": "EXTRA_CALLS: expected 1 call, got 2: ['grep', 'list_files']",
+          "transport_error": false,
+          "latency_s": 1.56,
+          "n_tool_calls": 2,
+          "tool_names": [
+            "grep",
+            "list_files"
+          ],
+          "completion_tokens": 46,
+          "prompt_tokens": 1122,
+          "text_head": "",
+          "finish_reason": "tool_calls"
+        },
+        {
+          "trial": 4,
+          "ok": false,
+          "reason": "EXTRA_CALLS: expected 1 call, got 2: ['grep', 'list_files']",
+          "transport_error": false,
+          "latency_s": 1.54,
+          "n_tool_calls": 2,
+          "tool_names": [
+            "grep",
+            "list_files"
+          ],
+          "completion_tokens": 47,
+          "prompt_tokens": 1122,
+          "text_head": "",
+          "finish_reason": "tool_calls"
+        },
+        {
+          "trial": 5,
+          "ok": false,
+          "reason": "EXTRA_CALLS: expected 1 call, got 2: ['grep', 'git_status']",
+          "transport_error": false,
+          "latency_s": 1.02,
+          "n_tool_calls": 2,
+          "tool_names": [
+            "grep",
+            "git_status"
+          ],
+          "completion_tokens": 27,
+          "prompt_tokens": 1122,
+          "text_head": "",
+          "finish_reason": "tool_calls"
+        },
+        {
+          "trial": 6,
+          "ok": false,
+          "reason": "EXTRA_CALLS: expected 1 call, got 2: ['grep', 'run_shell']",
+          "transport_error": false,
+          "latency_s": 2.23,
+          "n_tool_calls": 2,
+          "tool_names": [
+            "grep",
+            "run_shell"
+          ],
+          "completion_tokens": 66,
+          "prompt_tokens": 1122,
+          "text_head": "",
+          "finish_reason": "tool_calls"
+        },
+        {
+          "trial": 7,
+          "ok": true,
+          "reason": "ok",
+          "transport_error": false,
+          "latency_s": 1.45,
+          "n_tool_calls": 1,
+          "tool_names": [
+            "grep"
+          ],
+          "completion_tokens": 43,
+          "prompt_tokens": 1122,
+          "text_head": "",
+          "finish_reason": "tool_calls"
+        },
+        {
+          "trial": 8,
+          "ok": true,
+          "reason": "ok",
+          "transport_error": false,
+          "latency_s": 1.38,
+          "n_tool_calls": 1,
+          "tool_names": [
+            "grep"
+          ],
+          "completion_tokens": 41,
+          "prompt_tokens": 1122,
+          "text_head": "",
+          "finish_reason": "tool_calls"
+        },
+        {
+          "trial": 9,
+          "ok": false,
+          "reason": "EXTRA_CALLS: expected 1 call, got 2: ['grep', 'git_status']",
+          "transport_error": false,
+          "latency_s": 1.64,
+          "n_tool_calls": 2,
+          "tool_names": [
+            "grep",
+            "git_status"
+          ],
+          "completion_tokens": 45,
+          "prompt_tokens": 1122,
+          "text_head": "",
+          "finish_reason": "tool_calls"
+        },
+        {
+          "trial": 10,
+          "ok": true,
+          "reason": "ok",
+          "transport_error": false,
+          "latency_s": 1.37,
+          "n_tool_calls": 1,
+          "tool_names": [
+            "grep"
+          ],
+          "completion_tokens": 41,
+          "prompt_tokens": 1122,
+          "text_head": "",
+          "finish_reason": "tool_calls"
+        },
+        {
+          "trial": 11,
+          "ok": true,
+          "reason": "ok",
+          "transport_error": false,
+          "latency_s": 1.37,
+          "n_tool_calls": 1,
+          "tool_names": [
+            "grep"
+          ],
+          "completion_tokens": 41,
+          "prompt_tokens": 1122,
+          "text_head": "",
+          "finish_reason": "tool_calls"
+        }
+      ]
+    },
+    "08_long_prompt_tool_use": {
+      "kind": "tool",
+      "tool_choice": "required",
+      "expect_tool": "run_shell",
+      "passed": 9,
+      "trials": 12,
+      "pass_rate": 0.75,
+      "passed_lenient": 12,
+      "pass_rate_lenient": 1.0,
+      "median_latency_s": 5.33,
+      "required_zero_call_violations": 0,
+      "detail": [
+        {
+          "trial": 0,
+          "ok": false,
+          "reason": "EXTRA_CALLS: expected 1 call, got 2: ['run_shell', 'run_shell']",
+          "transport_error": false,
+          "latency_s": 4.05,
+          "n_tool_calls": 2,
+          "tool_names": [
+            "run_shell",
+            "run_shell"
+          ],
+          "completion_tokens": 116,
+          "prompt_tokens": 4188,
+          "text_head": "",
+          "finish_reason": "tool_calls"
+        },
+        {
+          "trial": 1,
+          "ok": true,
+          "reason": "ok",
+          "transport_error": false,
+          "latency_s": 7.01,
+          "n_tool_calls": 1,
+          "tool_names": [
+            "run_shell"
+          ],
+          "completion_tokens": 166,
+          "prompt_tokens": 4188,
+          "text_head": "",
+          "finish_reason": "tool_calls"
+        },
+        {
+          "trial": 2,
+          "ok": true,
+          "reason": "ok",
+          "transport_error": false,
+          "latency_s": 2.61,
+          "n_tool_calls": 1,
+          "tool_names": [
+            "run_shell"
+          ],
+          "completion_tokens": 74,
+          "prompt_tokens": 4188,
+          "text_head": "",
+          "finish_reason": "tool_calls"
+        },
+        {
+          "trial": 3,
+          "ok": true,
+          "reason": "ok",
+          "transport_error": false,
+          "latency_s": 6.61,
+          "n_tool_calls": 1,
+          "tool_names": [
+            "run_shell"
+          ],
+          "completion_tokens": 162,
+          "prompt_tokens": 4188,
+          "text_head": "",
+          "finish_reason": "tool_calls"
+        },
+        {
+          "trial": 4,
+          "ok": true,
+          "reason": "ok",
+          "transport_error": false,
+          "latency_s": 8.34,
+          "n_tool_calls": 1,
+          "tool_names": [
+            "run_shell"
+          ],
+          "completion_tokens": 201,
+          "prompt_tokens": 4188,
+          "text_head": "",
+          "finish_reason": "tool_calls"
+        },
+        {
+          "trial": 5,
+          "ok": true,
+          "reason": "ok",
+          "transport_error": false,
+          "latency_s": 8.77,
+          "n_tool_calls": 1,
+          "tool_names": [
+            "run_shell"
+          ],
+          "completion_tokens": 240,
+          "prompt_tokens": 4188,
+          "text_head": "",
+          "finish_reason": "tool_calls"
+        },
+        {
+          "trial": 6,
+          "ok": true,
+          "reason": "ok",
+          "transport_error": false,
+          "latency_s": 2.38,
+          "n_tool_calls": 1,
+          "tool_names": [
+            "run_shell"
+          ],
+          "completion_tokens": 68,
+          "prompt_tokens": 4188,
+          "text_head": "",
+          "finish_reason": "tool_calls"
+        },
+        {
+          "trial": 7,
+          "ok": false,
+          "reason": "EXTRA_CALLS: expected 1 call, got 2: ['run_shell', 'run_shell']",
+          "transport_error": false,
+          "latency_s": 3.64,
+          "n_tool_calls": 2,
+          "tool_names": [
+            "run_shell",
+            "run_shell"
+          ],
+          "completion_tokens": 109,
+          "prompt_tokens": 4188,
+          "text_head": "",
+          "finish_reason": "tool_calls"
+        },
+        {
+          "trial": 8,
+          "ok": true,
+          "reason": "ok",
+          "transport_error": false,
+          "latency_s": 3.44,
+          "n_tool_calls": 1,
+          "tool_names": [
+            "run_shell"
+          ],
+          "completion_tokens": 95,
+          "prompt_tokens": 4188,
+          "text_head": "",
+          "finish_reason": "tool_calls"
+        },
+        {
+          "trial": 9,
+          "ok": true,
+          "reason": "ok",
+          "transport_error": false,
+          "latency_s": 2.86,
+          "n_tool_calls": 1,
+          "tool_names": [
+            "run_shell"
+          ],
+          "completion_tokens": 78,
+          "prompt_tokens": 4188,
+          "text_head": "",
+          "finish_reason": "tool_calls"
+        },
+        {
+          "trial": 10,
+          "ok": true,
+          "reason": "ok",
+          "transport_error": false,
+          "latency_s": 10.03,
+          "n_tool_calls": 1,
+          "tool_names": [
+            "run_shell"
+          ],
+          "completion_tokens": 253,
+          "prompt_tokens": 4188,
+          "text_head": "",
+          "finish_reason": "tool_calls"
+        },
+        {
+          "trial": 11,
+          "ok": false,
+          "reason": "EXTRA_CALLS: expected 1 call, got 2: ['run_shell', 'run_shell']",
+          "transport_error": false,
+          "latency_s": 8.96,
+          "n_tool_calls": 2,
+          "tool_names": [
+            "run_shell",
+            "run_shell"
+          ],
+          "completion_tokens": 243,
+          "prompt_tokens": 4188,
+          "text_head": "",
+          "finish_reason": "tool_calls"
+        }
+      ]
+    }
+  },
+  "timestamp": "20260901T021347Z"
+}

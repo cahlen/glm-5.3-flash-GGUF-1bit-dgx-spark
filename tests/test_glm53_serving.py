@@ -48,6 +48,21 @@ def test_defaults_match_the_documented_target_configuration():
         assert flag in out, f"missing {flag}"
 
 
+def test_min_p_and_top_k_are_declared_not_inherited():
+    """llama.cpp applies min_p and top_k whether or not you set them.
+
+    Its defaults (min_p=0.05, top_k=40) truncate on top of top_p, so a config
+    that omits them is not "unfiltered" — it is at the mercy of whatever this
+    build happens to default to, which can change between versions. Both must
+    appear on the command line explicitly.
+    """
+    out = dry()
+    assert "--min-p" in out, "min_p left to the llama.cpp default"
+    assert "--top-k" in out, "top_k left to the llama.cpp default"
+    assert "--min-p 0.01" in out   # Zhipu/Unsloth guidance for GLM-5.3
+    assert "--top-k 0" in out      # specified by neither; disabled rather than 40
+
+
 def test_sampling_defaults_match_unsloths_guide_for_this_gguf():
     """unsloth.ai/docs/models/glm-5.3-flash "Recommended Settings", Default:
     temperature=1.0, top_p=0.95 — and measured better here than top_p=1.0
