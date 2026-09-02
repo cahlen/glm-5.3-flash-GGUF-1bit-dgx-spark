@@ -31,7 +31,11 @@ ARMS=(
 for a in "${ARMS[@]}"; do
   lbl="${a%%:*}"; extra="${a#*:}"
   echo; echo "=== mtptune-$lbl  [${extra:-defaults}] ==="
-  printf '[Service]\nEnvironment=GLM53_EXTRA=%s\n' "$extra" > "$DROPIN"
+# NOTE: systemd Environment= splits on whitespace unless the WHOLE
+# assignment is quoted. Without the quotes, GLM53_EXTRA=--n-cpu-moe 4
+# reaches the server as just "--n-cpu-moe" and it exits with
+# 'expected value for argument'. This silently invalidated a whole sweep.
+  printf '[Service]\nEnvironment="GLM53_EXTRA=%s"\n' "$extra" > "$DROPIN"
   systemctl --user daemon-reload
   systemctl --user restart glm53
   ( cd "$BENCH" && uv run python benches/bench_mtp.py \

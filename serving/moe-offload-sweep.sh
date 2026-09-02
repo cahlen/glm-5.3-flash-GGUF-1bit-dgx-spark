@@ -27,9 +27,13 @@ mkdir -p "$DROPIN_DIR"
 for n in "${NS[@]}"; do
   echo; echo "=== n-cpu-moe=$n ==="
   if [ "$n" = "0" ]; then
-    printf '[Service]\nEnvironment=GLM53_EXTRA=\n' > "$DROPIN"
+    printf '[Service]\nEnvironment="GLM53_EXTRA="\n' > "$DROPIN"
   else
-    printf '[Service]\nEnvironment=GLM53_EXTRA=--n-cpu-moe %s\n' "$n" > "$DROPIN"
+# NOTE: systemd Environment= splits on whitespace unless the WHOLE
+# assignment is quoted. Without the quotes, GLM53_EXTRA=--n-cpu-moe 4
+# reaches the server as just "--n-cpu-moe" and it exits with
+# 'expected value for argument'. This silently invalidated a whole sweep.
+    printf '[Service]\nEnvironment="GLM53_EXTRA=--n-cpu-moe %s"\n' "$n" > "$DROPIN"
   fi
   systemctl --user daemon-reload
   systemctl --user restart glm53

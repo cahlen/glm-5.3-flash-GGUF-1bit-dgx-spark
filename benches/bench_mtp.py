@@ -99,12 +99,28 @@ def main():
     # Ask the server what speculation it is actually running, instead of
     # inferring it from --label. A mislabelled arm is how a sweep silently
     # compares a config against itself.
-    spec_type = "unknown"
     try:
-        import httpx as _h
-        pr = _h.get(args.base_url.rsplit("/v1", 1)[0] + "/props", timeout=10.0).json()
-        spec_type = (pr.get("default_generation_settings", {})
-                       .get("params", {}).get("speculative.types") or "unknown")
+        # NOTE: default_generation_settings.params["speculative.types"] is the
+        # PER-REQUEST default and reads "none" even when the server was started
+        # with --spec-type draft-mtp. Reading it reported "(none)" for a run that
+        # was demonstrably drafting — the same mislabelling this field was added
+        # to prevent. There is no server-level spec type in /props, so fall back
+        # to the process command line, which is authoritative.
+        import subprocess
+        spec_type = "unknown"
+        try:
+            ps = subprocess.run(["ps", "-eo", "args"], capture_output=True,
+                                text=True, timeout=10).stdout
+            for line in ps.splitlines():
+                if "llama-server" in line and "--spec-type" in line:
+                    parts = line.split()
+                    spec_type = parts[parts.index("--spec-type") + 1]
+                    break
+            else:
+                if any("llama-server" in l for l in ps.splitlines()):
+                    spec_type = "none"
+        except Exception:
+            pass
     except Exception:
         pass
 

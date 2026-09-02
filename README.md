@@ -19,18 +19,20 @@ llama-server \
   --n-gpu-layers 999 --ctx-size 131072 --parallel 1 \
   --cache-type-k q8_0 --cache-type-v q8_0 --flash-attn on \
   --batch-size 2048 --ubatch-size 512 --jinja \
-  --temp 1.0 --top-p 0.95 \
+  --temp 1.0 --top-p 0.95 --min-p 0.01 --top-k 0 \
   --spec-type draft-mtp --spec-draft-n-max 2 --spec-draft-n-min 0 \
-  --reasoning-format deepseek --reasoning-preserve
+  --reasoning-effort high --reasoning-format deepseek --reasoning-preserve
 ```
+
+That is the command actually running, copied from `ps`, not a reconstruction.
 
 | | |
 |---|---|
 | Model | `unsloth/GLM-5.3-Flash-GGUF` · **`UD-IQ1_S`** · 86.7 GiB, 3 shards |
 | Arch | `glm5next` — 46 blocks, 288 experts (8 active), `nextn_predict_layers=1` |
-| llama.cpp | [unslothai/llama.cpp](https://github.com/unslothai/llama.cpp) · `glm5next/upstream` · **`d07e71e`** |
+| llama.cpp | [unslothai/llama.cpp](https://github.com/unslothai/llama.cpp) · `glm5next/upstream` · **`d07e71e`** (pinned deliberately — see section 7) |
 | Resident | **90.9 GiB**, leaving ~22 GiB |
-| Throughput | **27.75 tok/s** decode · ~290 tok/s prefill |
+| Throughput | **27.5–29 tok/s** decode · ~283 tok/s prefill @4k |
 | Context | 131072, Q8 KV |
 
 **Do not pass `--spec-draft-model` / `-md`.** GLM-5.3-Flash ships its MTP head
@@ -209,6 +211,28 @@ Treat any single-digit-percent decode difference in this repo as unproven unless
 it clears roughly 3%, and any tool-call difference as unproven unless it survives
 a re-run at higher n — see the `min_p` episode in section 5b.
 
+### 3d. The remaining MTP thresholds: all inside the noise floor
+
+After depth (section 3), the knobs left govern *when* the drafter bothers rather
+than how far it drafts. Swept with `serving/mtp-tune-sweep.sh`, 3 reps x 4
+workloads:
+
+| arm | decode | acceptance | vs baseline |
+|---|---|---|---|
+| baseline (`p-split 0.10`, `p-min 0.00`, `n-min 0`) | 28.21 | 0.596 | — |
+| `--spec-draft-p-min 0.05` | 28.95 | 0.604 | +2.6% |
+| `--spec-draft-p-split 0.05` | 28.60 | 0.629 | +1.4% |
+| `--spec-draft-n-min 1` | 28.18 | 0.578 | −0.1% |
+| `--spec-draft-p-split 0.20` | 27.91 | 0.579 | −1.1% |
+
+**Every arm is inside the ±3% noise floor from section 3c, so none of them mean
+anything.** Defaults kept.
+
+This is the floor doing its job. `p-min 0.05` looks like a +2.6% win and it is
+tempting to ship it; it is the same mistake as the n=5 `min_p` result in a
+different costume. A number that cannot clear the measurement noise of the
+harness that produced it is not a result.
+
 ### 4. `reasoning_effort` only accepts `low` and `high`
 
 Straight from the chat template embedded in the GGUF:
@@ -354,6 +378,34 @@ which is 0.01% of a 73k prompt and identical across arms. The guard now
 thresholds on a fraction (1%) rather than `> 0`, because a check that fires on
 every run is one nobody heeds. The measurements themselves are uncontaminated.
 
+### 5d. `--n-cpu-moe` frees nothing here — and `nvidia-smi` will lie to you about it
+
+On a discrete GPU, moving MoE expert weights to the CPU trades VRAM for speed.
+On GB10 the GPU's memory **is** system RAM, so there is no second pool to move
+them to. Measured with `serving/moe-offload-sweep.sh`:
+
+| `--n-cpu-moe` | `nvidia-smi` reports | **MemAvailable** | decode | acceptance |
+|---|---|---|---|---|
+| **0** | 90.83 GiB | **22.0 GiB** | **27.11** | 0.594 |
+| 4 | 89.19 | 20.8 | 25.48 | 0.588 |
+| 8 | 82.23 | 21.6 | 22.07 | 0.602 |
+| 16 | **66.85** | **21.2** | **18.04** | 0.594 |
+
+**`nvidia-smi` drops 24 GiB while real headroom does not move.** The bytes are
+relocated from GPU allocations into CPU buffers; on unified memory that is the
+same physical RAM, so `MemAvailable` sits at 21–22 GiB across every arm. You pay
+33% of decode and receive nothing.
+
+This is worth knowing precisely because it is an active trap: anyone sizing a
+Spark by reading GPU memory would see 66.85 GiB used at `--n-cpu-moe 16`,
+conclude ~50 GiB was free, and try to load a quant into memory that does not
+exist. **On this hardware, `MemAvailable` is the number that means something and
+`nvidia-smi` is not.** The same applies to `-cmoe` and to `-ot` overrides
+targeting expert tensors.
+
+MTP is unaffected — acceptance holds at ~0.59 across all arms — so the loss is
+purely the cost of evaluating experts CPU-side.
+
 ### 6. Quant ceiling on 128 GB
 
 | quant | weights | resident @128K | MemAvailable |
@@ -380,7 +432,49 @@ Unsloth's own hardware table (total memory, unified): 1-bit **100 GB**, 2-bit
 speed, but at n=30 that difference is inside binomial noise — a hint, not a
 result. The 8.8 GiB it costs is certain. Re-run with `--trials 15+` to settle it.
 
-### 7. 256K works, but is not the default
+### 7. A newer llama.cpp is faster and breaks tool calls — stay pinned
+
+The pin is `d07e71e`, and the branch head has moved on. `949f7ef` (PR #27754's
+head, 14 commits ahead) was built into a separate worktree and measured
+back-to-back against the pinned binary, same model, same config:
+
+| | `d07e71e` (shipped) | `949f7ef` |
+|---|---|---|
+| load | 37 s | 46 s |
+| resident | 93008 MiB | 93007 MiB |
+| decode | 27.5 tok/s | **28.82** (+4.8%) |
+| MTP acceptance | 0.568 | 0.587 |
+| agentic strict | 42/50 | 42/50 |
+| `required` violations | 0 | 0 |
+
++4.8% clears the ±3% floor, so the newer build genuinely is faster — plausibly
+the CUDA MoE fast path (`mm_ids_helper` for any `n_expert_used`) that landed in
+those commits, which matters for a model routing 8 of 288 experts per token.
+
+**It is not shipped, because it produced a failure class the pinned build never
+has.** Scenario 09 returned `arguments were not valid JSON` — malformed JSON
+*inside* a tool call's arguments. Confirmed at 12 trials:
+
+| scenario 09, 12 trials | result |
+|---|---|
+| `d07e71e` | **12/12 pass** |
+| `949f7ef` | **9/12**, including invalid-JSON arguments |
+
+Every scenario-09 failure on the pinned build across this entire campaign has
+been a *wrong tool* — `read_file` instead of `apply_patch`. That is a judgement
+call an agent loop recovers from. Malformed arguments are a serialisation fault:
+the client receives a tool call it cannot parse at all, which is exactly what
+breaks an agent session mid-run. Invalid JSON appeared in **both** `949f7ef` runs
+and in **zero** runs of the pinned build.
+
+4.8% decode does not buy that risk. The candidate build is kept on disk
+(`~/llama.cpp-glm5-949f7ef`) so re-testing is only a `GLM53_BIN` change, and the
+right moment to revisit is when `glm5next` **merges to upstream master** rather
+than while it is a moving branch. Rebuild any candidate with
+`serving/build-candidate.sh <commit>`, which uses a git worktree so the serving
+tree and running binary are never touched.
+
+### 7b. 256K works, but is not the default
 
 Loads in 37 s, serves tool calls correctly, resident 94.2 GiB — but leaves only
 **16.8 GiB** for the OS, containers, the agent and its shell commands. Opt in per
