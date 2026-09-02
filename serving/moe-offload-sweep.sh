@@ -38,7 +38,7 @@ for n in "${NS[@]}"; do
   systemctl --user daemon-reload
   systemctl --user restart glm53
   ok=0
-  for i in $(seq 1 100); do
+  for _ in $(seq 1 100); do
     [ "$(curl -s --max-time 2 "http://127.0.0.1:${GLM53_PORT:-8090}/health" 2>/dev/null)" = '{"status":"ok"}' ] && { ok=1; break; }
     sleep 3
   done

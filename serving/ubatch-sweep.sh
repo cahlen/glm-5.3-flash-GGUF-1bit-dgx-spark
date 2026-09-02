@@ -41,7 +41,7 @@ for ub in "${UBS[@]}"; do
   systemctl --user daemon-reload
   systemctl --user restart glm53
   # wait for readiness before sampling memory, or we measure a partial load
-  for i in $(seq 1 80); do
+  for _ in $(seq 1 80); do
     [ "$(curl -s --max-time 2 "http://127.0.0.1:${GLM53_PORT:-8090}/health" 2>/dev/null)" = '{"status":"ok"}' ] && break
     sleep 3
   done

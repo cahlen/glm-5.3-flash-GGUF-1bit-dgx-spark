@@ -22,8 +22,18 @@ they were calculated and presented as measured:
 
 ```bash
 uv sync --group dev
-uv run --group dev pytest -q        # no GPU, no model, no server
+make test                           # pytest: no GPU, no model, no server
+make lint                           # shellcheck: the exact command CI runs
 ```
+
+**Run `make lint` before pushing.** Three commits in this repo's history went in
+red because CI was treated as the linter — the failures sat unnoticed for three
+commits while a benchmark campaign ran. shellcheck installs without root
+(`uv tool install shellcheck-py`), so there is no excuse for finding out from a
+red badge.
+
+Both jobs are cheap and need no GPU. If `make lint` and `make test` pass, CI
+passes.
 
 On the machine actually running the server, also run the drift checks that
 compare `deploy/` against the installed originals:

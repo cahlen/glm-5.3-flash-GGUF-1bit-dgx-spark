@@ -6,7 +6,7 @@ URL    ?= http://127.0.0.1:8090/v1
 LABEL  ?= glm-5.3-flash
 TRIALS ?= 3
 
-.PHONY: setup test up down restart health agentic mtp mtp-sweep bench
+.PHONY: setup test lint up down restart health agentic mtp mtp-sweep bench
 
 setup:
 	uv sync
@@ -14,6 +14,12 @@ setup:
 # Harness unit tests. No GPU, no server, ~1s. Run this before trusting a number.
 test:
 	uv run --group dev pytest -q
+
+# The exact command CI runs. Run it BEFORE pushing: three commits in this repo's
+# history were pushed red because CI was used as the linter instead of this.
+# shellcheck is a python package, so it needs no root: uv tool install shellcheck-py
+lint:
+	shellcheck -S warning serving/*.sh deploy/*.sh
 
 up:      ; systemctl --user start glm53
 down:    ; systemctl --user stop glm53
