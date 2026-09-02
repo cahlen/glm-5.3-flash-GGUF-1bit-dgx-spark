@@ -32,8 +32,8 @@ def check(scenario_id, text="", calls=None):
 
 # --------------------------------------------------------------- structure
 
-def test_there_are_ten_scenarios():
-    assert len(spec.SCENARIOS) == 10
+def test_there_are_eleven_scenarios():
+    assert len(spec.SCENARIOS) == 11
 
 
 def test_scenario_ids_are_unique_and_ordered():
@@ -371,3 +371,57 @@ def test_duplicate_correct_calls_are_extras_not_wrong_tools():
     ])
     assert not ok
     assert why.startswith(spec.EXTRA_CALLS), why
+
+
+
+# ------------------------------------------------- 11 multi-step first action
+# Added after a live failure on 2026-09-02: a 9-step prompt made the model
+# generate 13,200+ tokens planning inside one <think> block, producing nothing
+# the client could act on and heading for the 16384 output cap. Every other
+# scenario here is single-step, so none of them could see it.
+
+def test_multistep_accepts_a_first_shell_action():
+    ok, why = check("11_multistep_first_action", "",
+                    [call("run_shell", {"command": "mkdir -p logstat-proj"})])
+    assert ok, why
+
+
+def test_multistep_accepts_a_first_file_write():
+    ok, why = check("11_multistep_first_action", "",
+                    [call("write_file", {"path": "logstat-proj/pyproject.toml",
+                                         "content": "[project]\nname='logstat'\n"})])
+    assert ok, why
+
+
+def test_multistep_rejects_planning_with_no_action():
+    """The failure mode: prose plan, no tool call."""
+    ok, why = check("11_multistep_first_action",
+                    "Here is my plan:\n1. Create the directory\n2. Write the CLI\n"
+                    "3. Add tests\n4. Run them\n5. Fix failures")
+    assert not ok
+    assert "budget-exhaustion" in why
+
+
+def test_multistep_rejects_starting_in_the_wrong_place():
+    ok, why = check("11_multistep_first_action", "",
+                    [call("run_tests", {}) if hasattr(spec, "run_tests") else
+                     call("grep", {"pattern": "logstat"})])
+    assert not ok
+
+
+def test_multistep_rejects_an_empty_argument():
+    ok, why = check("11_multistep_first_action", "",
+                    [call("run_shell", {"command": ""})])
+    assert not ok
+
+
+def test_multistep_pins_its_own_token_budget():
+    """The bounded budget IS the test; without it nothing is being measured."""
+    sc = spec.SCENARIOS_BY_ID["11_multistep_first_action"]
+    assert sc["max_tokens"] == 2048
+
+
+def test_multistep_prompt_really_is_multi_step():
+    body = spec.SCENARIOS_BY_ID["11_multistep_first_action"]["messages"][-1]["content"]
+    assert all(f"{n}." in body for n in range(1, 10)), "should present 9 numbered steps"
+    assert "Do not ask me questions" in body  # unhinted on purpose

@@ -325,6 +325,36 @@ def _check_shell_generation(text, tool_calls):
     return True, "ok"
 
 
+def _check_multistep_first_action(text, tool_calls):
+    """A multi-step task must be STARTED, not fully planned.
+
+    This is the failure that a single-step suite cannot see. Given a task with
+    many numbered steps and a bounded output budget, GLM-5.3 at high/max
+    reasoning will try to plan the entire task inside one <think> block and can
+    exhaust the whole budget before emitting anything actionable — the client
+    then receives a 200 with no tool call and no content.
+
+    Observed live 2026-09-02: a 9-step prompt produced 13,200+ generated tokens
+    on a single request with nothing visible to the user, heading for the 16384
+    cap. The correct behaviour is to take the FIRST concrete action and let the
+    agent loop drive the remaining steps.
+    """
+    if not tool_calls:
+        return False, ("no tool call — planned instead of acting "
+                       "(this is the budget-exhaustion failure mode)")
+    names = [_name_of(c) for c in tool_calls]
+    # The first action for "create a project directory and a pyproject" is a
+    # shell command or a file write. Anything else means it started elsewhere.
+    if not any(n in ("run_shell", "write_file") for n in names):
+        return False, f"first action was {names}, expected run_shell or write_file"
+    args = _args_of(tool_calls[0])
+    if args is None:
+        return False, "arguments were not valid JSON"
+    if not any(args.get(k) for k in ("command", "path")):
+        return False, f"first call has no usable argument: {args}"
+    return True, "ok"
+
+
 # ---------------------------------------------------------------------------
 # The scenarios
 # ---------------------------------------------------------------------------
@@ -495,6 +525,47 @@ SCENARIOS = [
         "tool_choice": "required",
         "expect_tool": "run_shell",
         "check": _check_shell_generation,
+    },
+    {
+        "id": "11_multistep_first_action",
+        "kind": "tool",
+        "messages": [
+            {"role": "system", "content": AGENT_SYSTEM},
+            {"role": "user", "content": (
+                "Build a Python CLI called `logstat` in a new directory ./logstat-proj.\n\n"
+                "1. Create the directory and a pyproject.toml targeting Python 3.11+.\n"
+                "2. Implement logstat/cli.py reading newline-delimited JSON logs with keys "
+                "ts, level, msg, duration_ms.\n"
+                "3. Report count/min/max/mean/p95 of duration_ms.\n"
+                "4. Support --level and --format table|json.\n"
+                "5. A malformed line must print a clear error to stderr and exit 2, never a "
+                "traceback.\n"
+                "6. Generate sample.jsonl with 20 records across 3 levels.\n"
+                "7. Write pytest tests covering happy path, empty file, malformed line, "
+                "--level filter and --format json.\n"
+                "8. Run the tests and fix anything that fails.\n"
+                "9. Run ruff check and fix what it reports.\n\n"
+                # Deliberately the UNHINTED wording. Adding "take the first
+                # concrete action, do not plan the whole task" collapses output
+                # from ~2660 tokens to ~43 (measured 2026-09-02, controlled A/B,
+                # same body). Testing the hinted version would test the fix, not
+                # the behaviour.
+                "Make reasonable choices and proceed. Do not ask me questions."
+            )},
+        ],
+        "tools": CORE_TOOLS,
+        "tool_choice": "auto",
+        "expect_tool": None,
+        # Deliberately tight, and this scenario is EXPECTED TO FAIL on GLM-5.3
+        # at high/max reasoning: unhinted, it spends ~2660 tokens planning before
+        # acting, so a 2048 budget truncates it. That failure is the point — it
+        # is the single most likely way this setup disappoints in daily use, and
+        # a suite of single-step scenarios cannot see it.
+        #
+        # Raising max_tokens does not fix it, it moves the cliff. The fix is in
+        # the prompt: see the README section on multi-step prompts.
+        "max_tokens": 2048,
+        "check": _check_multistep_first_action,
     },
 ]
 

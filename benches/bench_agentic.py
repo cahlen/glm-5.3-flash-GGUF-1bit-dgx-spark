@@ -63,7 +63,10 @@ def run_scenario(client, base_url, scenario, *, model, trials, timeout,
         body = {
             "model": model,
             "messages": scenario["messages"],
-            "max_tokens": max_tokens,
+            # A scenario may pin its own budget. 11_multistep_first_action does,
+            # because the whole point is whether the model acts inside a bounded
+            # budget rather than planning until it runs out.
+            "max_tokens": scenario.get("max_tokens", max_tokens),
             "stream": False,
         }
         if scenario["tools"]:
@@ -161,6 +164,21 @@ def main():
                 max_tokens=args.max_tokens,
             )
             passed = sum(1 for t in trials if t["ok"])
+            # Budget exhaustion: the server stopped because it hit max_tokens
+            # while producing nothing actionable. This is NOT a model-quality
+            # miss — the client receives a 200 with no tool call and no content,
+            # and an agent loop has nothing to proceed on. It can happen to any
+            # scenario (GLM at high/max reasoning will plan until the budget is
+            # gone), so it is counted across all of them, like the required-call
+            # violations. Raising max_tokens moves this cliff, it does not
+            # remove it.
+            budget_exhausted = sum(
+                1 for t in trials
+                if not t.get("transport_error")
+                and t.get("finish_reason") == "length"
+                and not t.get("n_tool_calls")
+                and len((t.get("text_head") or "").strip()) < 40
+            )
             # Lenient: the expected tool was called correctly, but extra calls
             # rode along. Distinguishes waste from a wrong action.
             lenient = sum(1 for t in trials
@@ -184,6 +202,7 @@ def main():
                 "pass_rate_lenient": round(lenient / len(trials), 3) if trials else None,
                 "median_latency_s": round(statistics.median(lat), 2) if lat else None,
                 "required_zero_call_violations": zero_call_violations,
+                "budget_exhausted": budget_exhausted,
                 "detail": trials,
             }
             if passed == len(trials):
@@ -197,6 +216,8 @@ def main():
             extra = ""
             if zero_call_violations:
                 extra = f"  <-- {zero_call_violations} REQUIRED-but-zero-tool-calls"
+            if budget_exhausted:
+                extra += f"  <-- {budget_exhausted} BUDGET-EXHAUSTED (planned until max_tokens)"
             reasons = {t["reason"] for t in trials if not t["ok"]}
             why = ("  " + "; ".join(sorted(reasons))[:160]) if reasons else ""
             print(f"{mark:5} {s['id']:28} {passed}/{len(trials)}{extra}{why}", flush=True)
@@ -205,6 +226,7 @@ def main():
     total_lenient = sum(v["passed_lenient"] for v in per_scenario.values())
     total_trials = sum(v["trials"] for v in per_scenario.values())
     violations = sum(v["required_zero_call_violations"] for v in per_scenario.values())
+    exhausted = sum(v["budget_exhausted"] for v in per_scenario.values())
     scen_pass = sum(1 for v in per_scenario.values() if v["passed"] == v["trials"])
 
     payload = {
@@ -222,6 +244,7 @@ def main():
         "trial_pass_rate": round(total_pass / total_trials, 3) if total_trials else None,
         "trial_pass_rate_lenient": round(total_lenient / total_trials, 3) if total_trials else None,
         "required_zero_call_violations": violations,
+        "budget_exhausted_total": exhausted,
         "results": per_scenario,
     }
 
@@ -230,11 +253,13 @@ def main():
     print(f"trial pass rate        : {total_pass}/{total_trials} strict, "
           f"{total_lenient}/{total_trials} lenient (extra calls forgiven)")
     print(f"REQUIRED violations    : {violations}   (must be 0)")
+    print(f"budget exhausted       : {exhausted}   (planned past max_tokens with "
+          f"nothing actionable)")
 
     if not args.no_save:
         path = save_result(f"agentic-{args.label}", payload)
         print(f"saved: {path}")
-    return 0 if violations == 0 else 1
+    return 0 if (violations == 0 and exhausted == 0) else 1
 
 
 if __name__ == "__main__":

@@ -1,0 +1,110 @@
+{
+  "label": "scenario11-validate",
+  "base_url": "http://127.0.0.1:8090/v1",
+  "model": "glm-5.3-flash",
+  "trials_per_scenario": 5,
+  "reasoning_effort": null,
+  "temperature": null,
+  "top_p": null,
+  "min_p": null,
+  "top_k": null,
+  "scenarios_fully_passed": 1,
+  "scenarios_total": 1,
+  "trial_pass_rate": 1.0,
+  "trial_pass_rate_lenient": 1.0,
+  "required_zero_call_violations": 0,
+  "budget_exhausted_total": 0,
+  "results": {
+    "11_multistep_first_action": {
+      "kind": "tool",
+      "tool_choice": "auto",
+      "expect_tool": null,
+      "passed": 5,
+      "trials": 5,
+      "pass_rate": 1.0,
+      "passed_lenient": 5,
+      "pass_rate_lenient": 1.0,
+      "median_latency_s": 1.55,
+      "required_zero_call_violations": 0,
+      "budget_exhausted": 0,
+      "detail": [
+        {
+          "trial": 0,
+          "ok": true,
+          "reason": "ok",
+          "transport_error": false,
+          "latency_s": 5.67,
+          "n_tool_calls": 1,
+          "tool_names": [
+            "run_shell"
+          ],
+          "completion_tokens": 59,
+          "prompt_tokens": 647,
+          "text_head": "I'll build the `logstat` CLI. Let me start by creating the project structure.",
+          "finish_reason": "tool_calls"
+        },
+        {
+          "trial": 1,
+          "ok": true,
+          "reason": "ok",
+          "transport_error": false,
+          "latency_s": 1.21,
+          "n_tool_calls": 1,
+          "tool_names": [
+            "run_shell"
+          ],
+          "completion_tokens": 29,
+          "prompt_tokens": 647,
+          "text_head": "",
+          "finish_reason": "tool_calls"
+        },
+        {
+          "trial": 2,
+          "ok": true,
+          "reason": "ok",
+          "transport_error": false,
+          "latency_s": 1.55,
+          "n_tool_calls": 1,
+          "tool_names": [
+            "run_shell"
+          ],
+          "completion_tokens": 40,
+          "prompt_tokens": 647,
+          "text_head": "",
+          "finish_reason": "tool_calls"
+        },
+        {
+          "trial": 3,
+          "ok": true,
+          "reason": "ok",
+          "transport_error": false,
+          "latency_s": 1.53,
+          "n_tool_calls": 1,
+          "tool_names": [
+            "run_shell"
+          ],
+          "completion_tokens": 37,
+          "prompt_tokens": 647,
+          "text_head": "I'll start by exploring the repository structure, then build the project.",
+          "finish_reason": "tool_calls"
+        },
+        {
+          "trial": 4,
+          "ok": true,
+          "reason": "ok",
+          "transport_error": false,
+          "latency_s": 2.06,
+          "n_tool_calls": 1,
+          "tool_names": [
+            "run_shell"
+          ],
+          "completion_tokens": 54,
+          "prompt_tokens": 647,
+          "text_head": "I'll build the `logstat` CLI. Let me start by creating the directory structure and files.",
+          "finish_reason": "tool_calls"
+        }
+      ]
+    }
+  },
+  "timestamp": "20260902T192012Z"
+}
