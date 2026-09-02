@@ -133,8 +133,21 @@ Measured at matched settings (128K, MTP depth 2, 3 trials per scenario):
 **No measurable difference in speed or quality**; q8_0 saves 0.32 GiB (0.35%).
 This repo defaults to q8_0 because the saving is real and free, but **f16 is an
 equally valid choice and is the safer one if your llama.cpp was built without
-the q8_0 flash-attention kernels** (`GGML_CUDA_FA_ALL_QUANTS=OFF` ships f16/f16,
-q8_0/q8_0 and q4_0/q4_0; anything more exotic needs `=ON`).
+the q8_0 flash-attention kernels.**
+
+`GGML_CUDA_FA_ALL_QUANTS=OFF` (the default, and what this repo builds) compiles
+exactly four KV kernel variants — `f16/f16`, `bf16/bf16`, `q8_0/q8_0`,
+`q4_0/q4_0` — and additionally **requires K and V to be the same type**
+(`fattn.cu`: the `K->type != V->type` rejection exists only when the flag is
+off). `q4_1`, `q5_0` and `q5_1` are refused as KV types outright. An unsupported
+pairing does not error: it returns `BEST_FATTN_KERNEL_NONE` and llama.cpp
+**silently falls back to non-flash attention**, so you get a working server that
+is quietly slower.
+
+Turning it `=ON` unlocks mixed K/V types and the remaining quants at roughly
+double the compile time. Not worth it here: the only thing it buys is a smaller
+KV cache, and the table above shows the KV cache is already so small that
+quantizing it at all is worth 0.32 GiB against 86.7 GiB of weights.
 
 Do not generalise this to models with conventional attention — there, KV
 quantization is a large win. It is small *here* because 34 of 46 layers keep no

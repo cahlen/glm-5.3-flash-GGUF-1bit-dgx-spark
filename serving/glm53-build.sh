@@ -52,10 +52,17 @@ cmake -B build \
   -DCMAKE_CUDA_ARCHITECTURES="$CUDA_ARCH" \
   -DCMAKE_CUDA_COMPILER=/usr/local/cuda/bin/nvcc \
   -DGGML_CUDA_FA_ALL_QUANTS="${FA_ALL_QUANTS:-OFF}"
-# FA_ALL_QUANTS=OFF builds only the common flash-attention KV combinations
-# (f16/f16, q8_0/q8_0, q4_0/q4_0). q8_0 KV — what glm53.env uses — is in that
-# set. Set FA_ALL_QUANTS=ON only if you want to run an exotic K/V pairing;
-# it roughly doubles compile time.
+# FA_ALL_QUANTS=OFF compiles exactly four flash-attention KV variants —
+# f16/f16, bf16/bf16, q8_0/q8_0, q4_0/q4_0 — and requires K and V to be the SAME
+# type. q8_0/q8_0, what glm53.env uses, is in that set.
+#
+# An unsupported pairing does not fail loudly: llama.cpp returns
+# BEST_FATTN_KERNEL_NONE and silently falls back to non-flash attention, so a
+# mismatched -ctk/-ctv yields a working but quietly slower server.
+#
+# =ON unlocks mixed K/V types plus q4_1/q5_0/q5_1 at roughly double the compile
+# time. Not worth it for this model: KV is only ~1.7 GiB at 128K, so there is
+# almost nothing left to save.
 
 cmake --build build --config Release -j "$JOBS" --target llama-server llama-cli
 
