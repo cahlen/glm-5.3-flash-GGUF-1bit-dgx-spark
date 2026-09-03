@@ -101,6 +101,20 @@ def test_draft_model_is_not_emitted_even_via_extra():
 
 # ------------------------------------------------------------------ reasoning
 
+def test_reasoning_budget_is_capped_not_unrestricted():
+    """Unrestricted reasoning fails 45% of real agentic turns.
+
+    Measured by replaying a captured OpenCode request (17,908 prompt tokens,
+    53 tools), n=20 per arm: unrestricted returned a tool call 11/20 and hit the
+    output ceiling with nothing actionable 9/20; with a 2048 budget it was 20/20
+    and 0/20. Median turn latency fell from 11.2 min to 1.6 min. This is the
+    difference between the setup being usable and not.
+    """
+    out = dry()
+    assert "--reasoning-budget" in out, "unrestricted reasoning caps out ~45% of turns"
+    assert "--reasoning-budget 2048" in out
+
+
 def test_reasoning_effort_ships_high_not_max():
     """'high' measured better than Max for agentic tool use, twice.
 
@@ -180,3 +194,46 @@ def test_guard_exemption_names_the_actual_unit():
     text = installer.read_text()
     assert "GPU_GUARD_EXEMPT_UNITS" in text
     assert "glm53.service" in text
+
+
+
+# ---------------------------------------------- the quoting bug, three times
+# An unquoted value containing a space has broken this deployment three separate
+# ways, each time crash-looping the server:
+#   1. systemd  Environment=GLM53_EXTRA=--n-cpu-moe 4   -> arrived as "--n-cpu-moe"
+#      with no value; the server exited "expected value for argument"
+#   2. glm53-up.sh  CMD+=( ${GLM53_EXTRA} )  word-splits unquoted, so a
+#      multi-word --reasoning-budget-message became separate argv entries
+#   3. glm53.env is SOURCED BY BASH, so
+#         GLM53_REASONING_BUDGET_MESSAGE=Reasoning budget reached. ...
+#      parsed "budget" as a command. 40 restarts before it was caught.
+# The fix is always quoting; the guard is here so there is no fourth time.
+
+def test_env_file_parses_as_bash():
+    """glm53.env is sourced, so it must be valid bash."""
+    import subprocess
+    r = subprocess.run(["bash", "-n", str(ENV_FILE)], capture_output=True, text=True)
+    assert r.returncode == 0, f"glm53.env is not valid bash:\n{r.stderr}"
+
+
+def test_env_values_containing_spaces_are_quoted():
+    """An unquoted value with a space is a crash loop waiting to happen."""
+    offenders = []
+    for i, line in enumerate(ENV_FILE.read_text().splitlines(), 1):
+        line = line.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        key, _, val = line.partition("=")
+        if not key.startswith("GLM53_"):
+            continue
+        if " " in val and not (val.startswith(('"', "'")) and val.endswith(('"', "'"))):
+            offenders.append(f"{ENV_FILE.name}:{i}: {key} has an unquoted space")
+    assert not offenders, "\n".join(offenders)
+
+
+def test_launcher_quotes_the_budget_message():
+    """It must reach argv as ONE argument, spaces intact."""
+    out = dry(GLM53_REASONING_BUDGET_MESSAGE="stop now and act")
+    assert "--reasoning-budget-message" in out
+    # %q-escaped by the dry run, so spaces appear as backslash-escapes
+    assert ("stop\\ now\\ and\\ act" in out) or ("'stop now and act'" in out), out

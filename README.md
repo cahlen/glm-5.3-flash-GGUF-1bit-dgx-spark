@@ -21,7 +21,8 @@ llama-server \
   --batch-size 2048 --ubatch-size 512 --jinja \
   --temp 1.0 --top-p 0.95 --min-p 0.01 --top-k 0 \
   --spec-type draft-mtp --spec-draft-n-max 2 --spec-draft-n-min 0 \
-  --reasoning-effort high --reasoning-format deepseek --reasoning-preserve
+  --reasoning-effort high --reasoning-budget 2048 \\
+  --reasoning-format deepseek --reasoning-preserve
 ```
 
 That is the command actually running, copied from `ps`, not a reconstruction.
@@ -68,6 +69,59 @@ unified memory. The context and quant conclusions are specific to that; the
 watchdog, MTP-depth and `reasoning_effort` findings generalise further.
 
 ---
+
+## The single most important setting: `--reasoning-budget`
+
+Everything else in this document is worth single-digit percentages. This one
+decides whether the setup works at all.
+
+Left unrestricted (llama.cpp's default), GLM-5.3 on a realistic agentic prompt
+frequently reasons until it hits the output ceiling and returns **nothing the
+client can act on** — no tool call, no content, after eleven minutes. Measured by
+replaying a **real captured OpenCode request** (17,908 prompt tokens, 53 tool
+definitions), n=20 per arm, identical input:
+
+| | unrestricted | **`--reasoning-budget 2048`** |
+|---|---|---|
+| returned a tool call | 11/20 | **20/20** |
+| hit the cap with nothing actionable | **9/20 (45%)** | **0/20** |
+| over 8,000 completion tokens | 13/20 (65%) | 0/20 |
+| median completion | 15,867 tok | **2,145 tok** |
+| median turn latency | **11.2 min** | **1.6 min** |
+| spread across runs | 166–16,384 (**144×**) | 2,092–2,297 (**1.1×**) |
+
+Fisher exact on the cap-outs: **p ≈ 0.0008**.
+
+Three things worth drawing out.
+
+**The capped reasoning was not buying anything.** The tool calls returned under
+the budget are the same ones the fast unrestricted runs produced. The extra
+14,000 tokens of thinking did not lead somewhere better; it led nowhere.
+
+**`reason_chars` sits at ~8,000 on every single budgeted run** — the budget binds
+every time. On a prompt this size the model always wants to think longer than is
+useful, so this is not clipping an occasional outlier; it is correcting a
+systematic bias.
+
+**Variance, not just latency, is the win.** 144× down to 1.1×. An agent loop with
+a coin-flip chance of an eleven-minute stall is unusable regardless of its median.
+
+### Why this was missed for so long
+
+The bench suite measured **correctness** on ten single-step scenarios with a
+small tool surface, and **decode throughput** on short prompts. It could not see
+this: the failure needs a large tool surface and a multi-step task, and it
+presents as latency rather than a wrong answer. Throughput was tuned to a ±3%
+noise floor while a 45% total-failure rate sat unmeasured in a dimension nobody
+sampled.
+
+Five plausible causes were proposed and refuted before the real one was found —
+`reasoning_effort`, tool-surface size, prompt wording, `--reasoning-preserve`,
+and the budget itself on an earlier single-sample test. Every refutation that
+rested on one sample was worthless against a distribution this wide. See
+`~/glm53-capture/` for the capture proxy and the replay harness; **reproduce with
+that, not with a reconstructed prompt** — five reconstructions all failed to
+trigger it.
 
 ## Findings
 

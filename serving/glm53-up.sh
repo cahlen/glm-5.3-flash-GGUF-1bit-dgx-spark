@@ -77,6 +77,11 @@ fi
 # Reasoning. Empty effort means "let the template decide", which for GLM-5.3 is
 # Max — the right default for agentic work. See glm53.env.
 [ -n "${GLM53_REASONING_EFFORT:-}" ] && CMD+=( --reasoning-effort "$GLM53_REASONING_EFFORT" )
+# Dedicated variables rather than GLM53_EXTRA: EXTRA is word-split unquoted, so a
+# multi-word value (the budget message) arrives as separate arguments and the
+# server exits with "invalid argument". These preserve spaces.
+[ -n "${GLM53_REASONING_BUDGET:-}" ] && CMD+=( --reasoning-budget "$GLM53_REASONING_BUDGET" )
+[ -n "${GLM53_REASONING_BUDGET_MESSAGE:-}" ] && CMD+=( --reasoning-budget-message "$GLM53_REASONING_BUDGET_MESSAGE" )
 [ -n "${GLM53_REASONING_FORMAT:-}" ] && CMD+=( --reasoning-format "$GLM53_REASONING_FORMAT" )
 case "${GLM53_REASONING_PRESERVE:-on}" in
   on|1|true)   CMD+=( --reasoning-preserve ) ;;
@@ -91,6 +96,7 @@ echo "glm53-up: model=$(basename "$GLM53_MODEL")"
 echo "glm53-up: ctx=$GLM53_CTX kv=${GLM53_CACHE_TYPE_K}/${GLM53_CACHE_TYPE_V} spec=${GLM53_SPEC_TYPE:-none} n_max=${GLM53_SPEC_DRAFT_N_MAX:-} port=$GLM53_PORT"
 echo "glm53-up: effort=${GLM53_REASONING_EFFORT:-<template default: Max>} preserve=${GLM53_REASONING_PRESERVE:-on}"
 echo "glm53-up: temp=${GLM53_TEMP:-1.0} top_p=${GLM53_TOP_P:-0.95} min_p=${GLM53_MIN_P:-0.01} top_k=${GLM53_TOP_K:-0}"
+echo "glm53-up: reasoning_budget=${GLM53_REASONING_BUDGET:-<unrestricted>}"
 
 if [ "${DRY_RUN:-0}" = "1" ]; then
   printf '%q ' "${CMD[@]}"; echo
