@@ -36,6 +36,40 @@ That is the command actually running, copied from `ps`, not a reconstruction.
 | Throughput | **27.5–29 tok/s** decode · ~283 tok/s prefill @4k |
 | Context | 131072, Q8 KV |
 
+## Measured performance
+
+Everything below is measured on one DGX Spark (GB10, 128.5 GB unified) with the
+configuration above. Raw JSON for every figure is in [`results/`](results/).
+
+| | |
+|---|---|
+| **Decode (generation)** | **27.5–29 tok/s** with MTP · 18.7 tok/s without (**1.48×**) |
+| **Prefill (prompt processing)** | **283 tok/s** @4K · 282 @16K · 215 @64K |
+| **MTP draft acceptance** | **0.62** overall · 0.73 on code · 0.36 on prose |
+| **Model load** | **38 s** cold (86.7 GiB of weights) |
+| **Resident memory** | **90.9 GiB**, leaving ~22 GiB free |
+| **Context** | **131,072** tokens (q8_0 KV) · 256K possible, see §7 |
+| **Agentic turn latency** | **~1.6 min** median on a 17.9K-token, 53-tool prompt |
+| **Session cold start** | 34 s prefill (16 tools) · 64.8 s (53 tools) |
+
+Decode is content-dependent, which is a property of speculative decoding rather
+than noise: MTP predicts boilerplate well and prose badly.
+
+| workload | decode | acceptance |
+|---|---|---|
+| boilerplate code | 28.6 tok/s | 0.73 |
+| unified diffs | 27.9 | 0.69 |
+| JSON / shell | 27.6 | 0.58 |
+| prose reasoning | 23.3 | 0.47 |
+
+**Reliability, which matters more than any of the above:** across every
+benchmark run in `results/`, **zero** `tool_choice=required` requests returned
+without a tool call. On the agentic suite the model scores 22–24/30 strict and
+25–27/30 lenient — the gap being redundant extra tool calls, not wrong actions.
+
+The **±3% noise floor** for decode on this box (§3c) is what decides whether any
+comparison here is meaningful. Single-digit differences are not results.
+
 **Do not pass `--spec-draft-model` / `-md`.** GLM-5.3-Flash ships its MTP head
 *inside the same GGUF*. `--spec-type draft-mtp` alone loads it (+2.79 GiB).
 Pointing `-md` at the GGUF loads a **second full copy of the weights** and
