@@ -155,9 +155,12 @@ def main():
     per_scenario = {}
     with httpx.Client() as client:
         for s in scenarios:
+            # A scenario may demand more trials than the CLI asked for, when its
+            # target failure is too rare for a small sample to see reliably.
+            n_trials = max(args.trials, s.get("min_trials", 0))
             trials = run_scenario(
                 client, args.base_url, s,
-                model=args.model, trials=args.trials, timeout=args.timeout,
+                model=args.model, trials=n_trials, timeout=args.timeout,
                 reasoning_effort=args.reasoning_effort,
                 temperature=args.temperature, top_p=args.top_p,
                 min_p=args.min_p, top_k=args.top_k,

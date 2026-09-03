@@ -106,6 +106,73 @@ systematic bias.
 **Variance, not just latency, is the win.** 144× down to 1.1×. An agent loop with
 a coin-flip chance of an eleven-minute stall is unusable regardless of its median.
 
+### Verified across a real multi-turn conversation
+
+The budget was first validated on single turns (n=20 replays of one captured
+request). A conversation is where accumulated history could plausibly bring the
+failure back, so it was tested end-to-end: a live agentic loop with tool calls
+actually executed in a sandbox and results fed back.
+
+**16 turns, 0 budget-exhausted, 5.1 minutes total.** The prompt grew 593 →
+11,403 tokens with no degradation; completions stayed between 13 and 2,337
+tokens. The agent built a working Python CLI with **10 passing tests**.
+
+`reason_chars` per turn ran 0, 22, 81, 199, 249, 383, 605, 693, 711, 1476, 2470,
+4194 — mostly **well under** the 2048-token cap. That matters: the budget is not
+clipping normal operation, it only binds on the runaway turns. If 2048 were too
+tight, every turn would sit pinned at the ceiling with truncated thinking.
+
+Harness: `~/glm53-capture/agent_loop.py` (sandboxed; it executes model-generated
+shell, which is why the sandbox is not a formality).
+
+### The MCP tool surface: ~30s once per session, not per turn
+
+A real OpenCode request carried **53 tools totalling 63,710 characters** — 82% of
+a 17,908-token prompt. Disabling three servers (`chrome-devtools` 29 tools/25,429
+chars, `shadcn` 7/4,940, `sequential-thinking` 1/4,259) leaves 16 tools and 29,008
+chars, cutting the prompt to 9,689 tokens.
+
+Replaying the same captured 16-turn session with both tool sets:
+
+| seq | full: prompt / processed / prefill | trimmed: prompt / processed / prefill |
+|---|---|---|
+| 3 (first) | 17,908 / **17,908** / **64.8s** | 9,689 / — / ~34s cold |
+| 4 | 18,822 / 914 / 4.3s | 10,603 / **914** / 3.9s |
+| 5 | 19,049 / 227 / 1.5s | 10,830 / **227** / 1.4s |
+| 6 | 26,877 / **7,828** / **36.7s** | 18,658 / **7,828** / 33.2s |
+| 7–18 | 150–1,682 / 1.3–6.8s | identical `processed` |
+
+**`processed` is identical on every turn.** The tool block sits at the front of
+the prompt, so it is cached after turn 1 and never reprocessed. Trimming buys:
+
+- **~30s once per session** (turn 1 prefill, 64.8s → ~34s)
+- **~8% faster prefill thereafter** — attention over a shorter cached context
+- **8,219 tokens of context permanently freed** (~8% more headroom before
+  compaction, and compaction is expensive)
+
+It does **not** save time per turn. An earlier draft of this document claimed it
+did; that was wrong and only caught by measuring a full session.
+
+**The bigger lever is visible in the same table.** Turn 6 costs 33–37s in *both*
+arms because the conversation history jumped (18,358 → 46,453 chars). A single
+history-growth turn costs as much as the entire tool block. If sessions feel
+slow, shorter conversations beat a shorter tool list.
+
+### Priority order, corrected
+
+This document originally led with decode throughput. That was the wrong
+emphasis, and the ordering below is what the measurements actually support:
+
+1. **`--reasoning-budget 2048`** — 45% total-failure → 0%. Nothing else compares.
+2. **Session hygiene** — start fresh conversations; a history-growth turn costs
+   30s+ of prefill regardless of configuration.
+3. **Trim the MCP tool surface** — ~30s off session start, ~8% more context.
+4. **Quant choice** — decides whether the model runs at all.
+5. **MTP depth, ubatch, samplers** — real, measured, single-digit percentages.
+
+Items 4 and 5 occupied most of the tuning effort. Item 1 was a setting nobody
+had touched.
+
 ### Why this was missed for so long
 
 The bench suite measured **correctness** on ten single-step scenarios with a
