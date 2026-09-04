@@ -215,15 +215,37 @@ properly rather than assumed, two ways, at 1024 vs 2048:
 same task prompt, 2048 produced a more thorough test suite (16 vs 11 passing
 tests). Both built working software.
 
-**2048 is kept, and the reason is weak evidence rather than strong.** That agent
-loop comparison is **n=1 per arm**, and test count is not a clean quality metric.
-But the only measure that showed any difference favoured 2048, and the case for
-1024 was purely latency. Halving turn time is attractive; doing it against
-evidence that leans the other way is not.
+That n=1 comparison was then **settled properly at five agent-loop runs per
+arm** — each one building the CLI from scratch with tools actually executing,
+scored on whether its own tests pass:
 
-If turn latency matters more to you than a single-sample quality signal, 1024 is
-defensible — set `GLM53_REASONING_BUDGET=1024`. Settling it properly would need
-roughly five agent-loop runs per arm.
+| budget | tests passing (5 runs) | median | median wall | complete builds |
+|---|---|---|---|---|
+| 1024 | 11, 13, 13, 13, 16 | 13 | **4.7 min** | 5/5 |
+| **2048** | 11, 12, 16, 21, 23 | 16 | **4.5 min** | 5/5 |
+
+Both arms: 5/5 complete builds, **0 exhausted turns, 0 test failures**.
+
+**Quality: no significant difference.** 2048's median is higher, but
+Mann-Whitney U = 9.0 against a critical value of 2 for n=5,5 — nowhere near
+significant, and the ranges overlap heavily (both arms produced an 11 and a 16).
+
+**Latency: no difference either, and this corrects an earlier claim in this
+document.** The "1024 is half the latency" figure came from replaying a single
+fixed prompt, where per-turn generation dominates (47s vs 93s). Across a real
+build the medians are **4.7 vs 4.5 minutes** — indistinguishable. Turn count and
+the path the task happens to take dominate wall time, not the per-turn cap:
+1024 used 8–17 turns, 2048 used 10–15.
+
+**2048 is kept because the case for changing evaporated, not because it won.**
+The only argument for 1024 was latency and that turned out to be an artefact of
+measuring one prompt instead of one build. The weak quality signal, such as it
+is, points the other way.
+
+**Practical reading: pick any cap comfortably below `max_tokens` and stop
+thinking about it.** 1024, 2048 and 4096 all give zero cap-outs, all complete
+builds, and statistically indistinguishable results. The value is not worth
+tuning; its absence is what costs 45% of your turns.
 
 **What is established:** the cap's *existence* is what fixes the failure, not its
 value. Any cap comfortably below `max_tokens` works.
