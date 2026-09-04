@@ -788,6 +788,36 @@ make bench       # health + agentic + MTP
 make mtp-sweep   # draft-depth sweep
 ```
 
+## Client gotcha: `topP` does not reach llama.cpp
+
+If you drive this server from OpenCode — or anything else built on the Vercel AI
+SDK — sampling is **server-authoritative**, whether you intend it or not.
+
+Captured from the wire, OpenCode sends:
+
+```json
+{"temperature": 1, "topP": 0.95, "max_tokens": 16384, "stream": true,
+ "chat_template_kwargs": {"reasoning_effort": "high"}}
+```
+
+`topP` is camelCase. llama.cpp's OpenAI-compatible endpoint expects `top_p` and
+**ignores `topP` silently** — no error, no warning. Measured:
+
+| sent | result at `temperature 2.0`, 6 tries |
+|---|---|
+| `topP: 0.001` | **6 distinct outputs** — no effect |
+| `top_p: 0.001` | **1 distinct output** — collapsed to near-greedy, as expected |
+
+So a client-side `topP` is inert and the server's `--top-p` governs. If those two
+values happen to agree, everything looks fine and you will never notice; if you
+change the client value expecting an effect, you get none.
+
+**What does reach the server:** `temperature` (spelled the same in both
+conventions) and `chat_template_kwargs` (snake_case, passed through) — which is
+why per-request `reasoning_effort` selection works.
+
+**Set sampling in [`serving/glm53.env`](serving/glm53.env), not in the client.**
+
 ## Layout
 
 | path | |

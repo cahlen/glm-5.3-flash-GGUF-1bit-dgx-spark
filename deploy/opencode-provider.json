@@ -12,13 +12,28 @@
     "compacting before the server refuses.",
     "",
     "The default model deliberately sets NO reasoning_effort. The GLM-5.3 chat",
-    "template honours only 'low' and 'high'; anything else — including the literal",
-    "string 'max' — falls through to 'max'. Omitting the key IS how you ask for",
+    "template honours only 'low' and 'high'; anything else \u2014 including the literal",
+    "string 'max' \u2014 falls through to 'max'. Omitting the key IS how you ask for",
     "Max, which is what autonomous planning and tool selection need. Pinning it to",
     "'low' globally starves exactly those turns.",
     "",
     "glm-5.3-flash-low is the opt-in cheap lane for long straight code emission,",
-    "and is what small_model (titles, summaries) uses."
+    "and is what small_model (titles, summaries) uses.",
+    "",
+    "SAMPLING IS SERVER-AUTHORITATIVE \u2014 verified on the wire, not assumed.",
+    "OpenCode sends topP (camelCase). llama.cpp's OpenAI-compatible API expects",
+    "top_p and IGNORES topP silently. Measured 2026-09-04: topP=0.001 at",
+    "temperature 2.0 produced 6 distinct outputs in 6 tries (no effect), while",
+    "top_p=0.001 produced 1 (collapsed to near-greedy, as expected).",
+    "",
+    "So the topP value below is INERT. The effective top_p is whatever the server",
+    "was launched with (--top-p 0.95). It is kept here only so the intent is",
+    "visible and so it starts working if the client ever maps the field.",
+    "Change sampling in serving/glm53.env, not here.",
+    "",
+    "What DOES reach the server: temperature (same spelling either way) and",
+    "chat_template_kwargs (snake_case, passed through untouched) \u2014 which is why",
+    "the reasoning_effort lane selection works."
   ],
   "provider": {
     "spark-glm": {
@@ -34,19 +49,30 @@
           "tool_call": true,
           "reasoning": true,
           "temperature": true,
-          "limit": { "context": 114688, "output": 16384 },
-          "options": { "temperature": 1.0, "topP": 0.95 }
+          "limit": {
+            "context": 114688,
+            "output": 16384
+          },
+          "options": {
+            "temperature": 1.0,
+            "topP": 0.95
+          }
         },
         "glm-5.3-flash-low": {
           "name": "GLM-5.3-Flash UD-IQ1_S + MTP (reasoning: low)",
           "tool_call": true,
           "reasoning": true,
           "temperature": true,
-          "limit": { "context": 114688, "output": 16384 },
+          "limit": {
+            "context": 114688,
+            "output": 16384
+          },
           "options": {
             "temperature": 1.0,
             "topP": 0.95,
-            "chat_template_kwargs": { "reasoning_effort": "low" }
+            "chat_template_kwargs": {
+              "reasoning_effort": "low"
+            }
           }
         }
       }
