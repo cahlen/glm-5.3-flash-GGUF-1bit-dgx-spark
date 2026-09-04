@@ -10,6 +10,29 @@ are in this repo and the raw results are in [`results/`](results/).
 
 ---
 
+> ## ⚠️ If you serve GLM-5.3 with llama.cpp, set `--reasoning-budget`
+>
+> ```
+> --reasoning-budget 2048
+> ```
+>
+> Without it, **45% of realistic agentic turns return nothing at all** — no tool
+> call, no content, after ~11 minutes. Measured n=20 on a real captured request.
+> With it: **0/20**.
+>
+> llama.cpp defaults to `-1` (unrestricted). GLM-5.3 reasons inside a `<think>`
+> block *before* emitting its answer, so on a large prompt it can consume the
+> entire `max_tokens` allowance thinking and never reach the answer. The client
+> gets a `200 OK` with an empty message and no error explaining it.
+>
+> **This is not specific to the Spark, to the 1-bit quant, or to this repo.** It
+> is a property of GLM-5.3 plus llama.cpp plus a large agentic prompt, and it
+> will bite any deployment matching that shape. It is the single highest-impact
+> setting documented here — everything else is worth single-digit percentages.
+>
+> Details, the value sweep, and why the cap's *existence* matters more than its
+> value: [below](#the-single-most-important-setting---reasoning-budget).
+
 ## The configuration
 
 ```bash
@@ -105,6 +128,8 @@ watchdog, MTP-depth and `reasoning_effort` findings generalise further.
 ---
 
 ## The single most important setting: `--reasoning-budget`
+
+*Applies to any GLM-5.3 + llama.cpp deployment, not just this hardware or quant.*
 
 Everything else in this document is worth single-digit percentages. This one
 decides whether the setup works at all.
