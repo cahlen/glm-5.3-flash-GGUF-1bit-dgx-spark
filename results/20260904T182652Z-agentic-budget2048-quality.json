@@ -1,0 +1,1088 @@
+{
+  "label": "budget2048-quality",
+  "base_url": "http://127.0.0.1:8090/v1",
+  "model": "glm-5.3-flash",
+  "trials_per_scenario": 5,
+  "reasoning_effort": null,
+  "temperature": null,
+  "top_p": null,
+  "min_p": null,
+  "top_k": null,
+  "scenarios_fully_passed": 9,
+  "scenarios_total": 11,
+  "trial_pass_rate": 0.887,
+  "trial_pass_rate_lenient": 0.919,
+  "required_zero_call_violations": 0,
+  "budget_exhausted_total": 0,
+  "results": {
+    "01_text_completion": {
+      "kind": "text",
+      "tool_choice": null,
+      "expect_tool": null,
+      "passed": 5,
+      "trials": 5,
+      "pass_rate": 1.0,
+      "passed_lenient": 5,
+      "pass_rate_lenient": 1.0,
+      "median_latency_s": 4.82,
+      "required_zero_call_violations": 0,
+      "budget_exhausted": 0,
+      "detail": [
+        {
+          "trial": 0,
+          "ok": true,
+          "reason": "ok",
+          "transport_error": false,
+          "latency_s": 5.22,
+          "n_tool_calls": 0,
+          "tool_names": [],
+          "completion_tokens": 116,
+          "prompt_tokens": 40,
+          "text_head": "A hash map gives you O(1) average-time insertion, deletion, and lookup by key, whereas a sorted array requires O(log n) to search and O(n) to insert or delete. The trade-off is that a sorted array retains ordering, which enables range queries and sorted iteration, while a hash map does not.",
+          "finish_reason": "stop"
+        },
+        {
+          "trial": 1,
+          "ok": true,
+          "reason": "ok",
+          "transport_error": false,
+          "latency_s": 7.23,
+          "n_tool_calls": 0,
+          "tool_names": [],
+          "completion_tokens": 158,
+          "prompt_tokens": 40,
+          "text_head": "A hash map gives you average O(1) lookup, insertion, and deletion by key, while a sorted array only allows O(log n) searches and O(n) insertions/deletions. The hash map also lets you use arbitrary keys (not just values that support ordering), whereas a sorted array requires elements to be comparable",
+          "finish_reason": "stop"
+        },
+        {
+          "trial": 2,
+          "ok": true,
+          "reason": "ok",
+          "transport_error": false,
+          "latency_s": 4.82,
+          "n_tool_calls": 0,
+          "tool_names": [],
+          "completion_tokens": 113,
+          "prompt_tokens": 40,
+          "text_head": "A hash map gives you **O(1) average-time lookups**, since it computes an index directly from a key via a hash function, whereas a sorted array requires **O(log n)** binary search. A hash map also handles insertion and deletion in O(1) average time, while a sorted array needs O(n) to maintain sorted ",
+          "finish_reason": "stop"
+        },
+        {
+          "trial": 3,
+          "ok": true,
+          "reason": "ok",
+          "transport_error": false,
+          "latency_s": 3.68,
+          "n_tool_calls": 0,
+          "tool_names": [],
+          "completion_tokens": 90,
+          "prompt_tokens": 40,
+          "text_head": "A hash map gives you average O(1) lookup, insertion, and deletion by key, while a sorted array requires O(log n) search and O(n) insertion/deletion. In other words, a hash map is faster for dynamic key-based access, whereas a sorted array needs binary search and shifts data on updates. The trade-off",
+          "finish_reason": "stop"
+        },
+        {
+          "trial": 4,
+          "ok": true,
+          "reason": "ok",
+          "transport_error": false,
+          "latency_s": 4.32,
+          "n_tool_calls": 0,
+          "tool_names": [],
+          "completion_tokens": 104,
+          "prompt_tokens": 40,
+          "text_head": "A hash map gives you **O(1) average-time lookups** by key, while a sorted array requires O(log n) binary search or O(n) for unsorted access. Hash maps also let you insert and delete in O(1) average time, whereas a sorted array needs O(n) insertion/deletion to maintain sorted order.\n\nThe tradeoff: a ",
+          "finish_reason": "stop"
+        }
+      ]
+    },
+    "02_code_generation": {
+      "kind": "text",
+      "tool_choice": null,
+      "expect_tool": null,
+      "passed": 5,
+      "trials": 5,
+      "pass_rate": 1.0,
+      "passed_lenient": 5,
+      "pass_rate_lenient": 1.0,
+      "median_latency_s": 8.12,
+      "required_zero_call_violations": 0,
+      "budget_exhausted": 0,
+      "detail": [
+        {
+          "trial": 0,
+          "ok": true,
+          "reason": "ok",
+          "transport_error": false,
+          "latency_s": 7.74,
+          "n_tool_calls": 0,
+          "tool_names": [],
+          "completion_tokens": 223,
+          "prompt_tokens": 50,
+          "text_head": "```python\ndef binary_search(items, target):\n    \"\"\"\n    Perform a binary search on a sorted list of items.\n\n    Args:\n        items: A list of elements sorted in ascending order.\n        target: The value to search for.\n\n    Returns:\n        The index of the target in items if found, otherwise -1.\n\n",
+          "finish_reason": "stop"
+        },
+        {
+          "trial": 1,
+          "ok": true,
+          "reason": "ok",
+          "transport_error": false,
+          "latency_s": 6.88,
+          "n_tool_calls": 0,
+          "tool_names": [],
+          "completion_tokens": 209,
+          "prompt_tokens": 50,
+          "text_head": "```python\ndef binary_search(items, target):\n    \"\"\"\n    Perform a binary search on a sorted list of items.\n\n    Args:\n        items: A list sorted in ascending order.\n        target: The value to search for.\n\n    Returns:\n        The index of the target in items, or -1 if not found.\n\n    Examples:\n ",
+          "finish_reason": "stop"
+        },
+        {
+          "trial": 2,
+          "ok": true,
+          "reason": "ok",
+          "transport_error": false,
+          "latency_s": 8.12,
+          "n_tool_calls": 0,
+          "tool_names": [],
+          "completion_tokens": 235,
+          "prompt_tokens": 50,
+          "text_head": "```python\ndef binary_search(items, target):\n    \"\"\"\n    Perform binary search on a sorted (ascending) list of items.\n\n    Args:\n        items (list): A list of comparable elements, sorted in ascending order.\n        target: The value to search for.\n\n    Returns:\n        int: The index of the target ",
+          "finish_reason": "stop"
+        },
+        {
+          "trial": 3,
+          "ok": true,
+          "reason": "ok",
+          "transport_error": false,
+          "latency_s": 10.43,
+          "n_tool_calls": 0,
+          "tool_names": [],
+          "completion_tokens": 308,
+          "prompt_tokens": 50,
+          "text_head": "```python\ndef binary_search(items, target):\n    \"\"\"\n    Perform binary search on a sorted list of items.\n\n    Args:\n        items: A list of elements sorted in ascending order.\n        target: The value to search for.\n\n    Returns:\n        The index of the target in items if found, otherwise -1.\n\n  ",
+          "finish_reason": "stop"
+        },
+        {
+          "trial": 4,
+          "ok": true,
+          "reason": "ok",
+          "transport_error": false,
+          "latency_s": 8.16,
+          "n_tool_calls": 0,
+          "tool_names": [],
+          "completion_tokens": 244,
+          "prompt_tokens": 50,
+          "text_head": "```python\ndef binary_search(items, target):\n    \"\"\"\n    Perform binary search on a sorted list (ascending order).\n\n    Parameters:\n        items (list): A sorted list of comparable elements.\n        target: The value to search for.\n\n    Returns:\n        int: The index of the target in items, or -1 i",
+          "finish_reason": "stop"
+        }
+      ]
+    },
+    "03_json_output": {
+      "kind": "text",
+      "tool_choice": null,
+      "expect_tool": null,
+      "passed": 5,
+      "trials": 5,
+      "pass_rate": 1.0,
+      "passed_lenient": 5,
+      "pass_rate_lenient": 1.0,
+      "median_latency_s": 4.85,
+      "required_zero_call_violations": 0,
+      "budget_exhausted": 0,
+      "detail": [
+        {
+          "trial": 0,
+          "ok": true,
+          "reason": "ok",
+          "transport_error": false,
+          "latency_s": 5.45,
+          "n_tool_calls": 0,
+          "tool_names": [],
+          "completion_tokens": 133,
+          "prompt_tokens": 66,
+          "text_head": "{\"name\":\"order-api\",\"version\":\"1.0.0\",\"dependencies\":[\"fastapi>=0.110.0\",\"uvicorn>=0.29.0\",\"pydantic>=2.6.0\",\"pydantic-settings>=2.2.0\",\"asyncpg>=0.29.0\",\"sqlalchemy>=2.0.30\",\"redis>=5.0.4\",\"requests>=2.31.0\",\"python-dotenv>=1.0.1\"]}",
+          "finish_reason": "stop"
+        },
+        {
+          "trial": 1,
+          "ok": true,
+          "reason": "ok",
+          "transport_error": false,
+          "latency_s": 2.48,
+          "n_tool_calls": 0,
+          "tool_names": [],
+          "completion_tokens": 70,
+          "prompt_tokens": 66,
+          "text_head": "```json\n{\n  \"name\": \"order-api\",\n  \"version\": \"1.0.0\",\n  \"dependencies\": [\n    \"fastapi\",\n    \"uvicorn\",\n    \"pydantic\",\n    \"sqlalchemy\",\n    \"psycopg2-binary\",\n    \"httpx\"\n  ]\n}\n```",
+          "finish_reason": "stop"
+        },
+        {
+          "trial": 2,
+          "ok": true,
+          "reason": "ok",
+          "transport_error": false,
+          "latency_s": 6.23,
+          "n_tool_calls": 0,
+          "tool_names": [],
+          "completion_tokens": 181,
+          "prompt_tokens": 66,
+          "text_head": "{\n  \"name\": \"order-api\",\n  \"version\": \"1.0.0\",\n  \"dependencies\": [\n    \"fastapi>=0.110.0\",\n    \"uvicorn>=0.29.0\",\n    \"pydantic>=2.6.0\",\n    \"pydantic-settings>=2.2.0\",\n    \"sqlalchemy>=2.0.29\",\n    \"alembic>=1.13.1\",\n    \"psycopg2-binary>=2.9.9\",\n    \"redis>=5.0.1\",\n    \"httpx>=0.27.0\",\n    \"python",
+          "finish_reason": "stop"
+        },
+        {
+          "trial": 3,
+          "ok": true,
+          "reason": "ok",
+          "transport_error": false,
+          "latency_s": 4.85,
+          "n_tool_calls": 0,
+          "tool_names": [],
+          "completion_tokens": 143,
+          "prompt_tokens": 66,
+          "text_head": "```json\n{\n  \"name\": \"order-api\",\n  \"version\": \"1.0.0\",\n  \"dependencies\": [\n    \"fastapi>=0.110.0\",\n    \"uvicorn>=0.29.0\",\n    \"pydantic>=2.6.0\",\n    \"sqlalchemy>=2.0.0\",\n    \"psycopg2-binary>=2.9.9\",\n    \"redis>=5.0.0\",\n    \"httpx>=0.27.0\",\n    \"python-dotenv>=1.0.0\"\n  ]\n}\n```",
+          "finish_reason": "stop"
+        },
+        {
+          "trial": 4,
+          "ok": true,
+          "reason": "ok",
+          "transport_error": false,
+          "latency_s": 3.73,
+          "n_tool_calls": 0,
+          "tool_names": [],
+          "completion_tokens": 102,
+          "prompt_tokens": 66,
+          "text_head": "```json\n{\n  \"name\": \"order-api\",\n  \"version\": \"1.0.0\",\n  \"dependencies\": [\n    \"fastapi>=0.110.0\",\n    \"uvicorn>=0.29.0\",\n    \"pydantic>=2.6.0\",\n    \"starlette>=0.37.0\"\n  ]\n}\n```",
+          "finish_reason": "stop"
+        }
+      ]
+    },
+    "04_required_tool_call": {
+      "kind": "tool",
+      "tool_choice": "required",
+      "expect_tool": "read_file",
+      "passed": 5,
+      "trials": 5,
+      "pass_rate": 1.0,
+      "passed_lenient": 5,
+      "pass_rate_lenient": 1.0,
+      "median_latency_s": 0.64,
+      "required_zero_call_violations": 0,
+      "budget_exhausted": 0,
+      "detail": [
+        {
+          "trial": 0,
+          "ok": true,
+          "reason": "ok",
+          "transport_error": false,
+          "latency_s": 2.72,
+          "n_tool_calls": 1,
+          "tool_names": [
+            "read_file"
+          ],
+          "completion_tokens": 14,
+          "prompt_tokens": 480,
+          "text_head": "",
+          "finish_reason": "tool_calls"
+        },
+        {
+          "trial": 1,
+          "ok": true,
+          "reason": "ok",
+          "transport_error": false,
+          "latency_s": 0.71,
+          "n_tool_calls": 1,
+          "tool_names": [
+            "read_file"
+          ],
+          "completion_tokens": 18,
+          "prompt_tokens": 480,
+          "text_head": "",
+          "finish_reason": "tool_calls"
+        },
+        {
+          "trial": 2,
+          "ok": true,
+          "reason": "ok",
+          "transport_error": false,
+          "latency_s": 0.64,
+          "n_tool_calls": 1,
+          "tool_names": [
+            "read_file"
+          ],
+          "completion_tokens": 14,
+          "prompt_tokens": 480,
+          "text_head": "",
+          "finish_reason": "tool_calls"
+        },
+        {
+          "trial": 3,
+          "ok": true,
+          "reason": "ok",
+          "transport_error": false,
+          "latency_s": 0.64,
+          "n_tool_calls": 1,
+          "tool_names": [
+            "read_file"
+          ],
+          "completion_tokens": 14,
+          "prompt_tokens": 480,
+          "text_head": "",
+          "finish_reason": "tool_calls"
+        },
+        {
+          "trial": 4,
+          "ok": true,
+          "reason": "ok",
+          "transport_error": false,
+          "latency_s": 0.63,
+          "n_tool_calls": 1,
+          "tool_names": [
+            "read_file"
+          ],
+          "completion_tokens": 14,
+          "prompt_tokens": 480,
+          "text_head": "",
+          "finish_reason": "tool_calls"
+        }
+      ]
+    },
+    "05_multi_turn_tool_use": {
+      "kind": "tool",
+      "tool_choice": "auto",
+      "expect_tool": "apply_patch",
+      "passed": 5,
+      "trials": 5,
+      "pass_rate": 1.0,
+      "passed_lenient": 5,
+      "pass_rate_lenient": 1.0,
+      "median_latency_s": 1.94,
+      "required_zero_call_violations": 0,
+      "budget_exhausted": 0,
+      "detail": [
+        {
+          "trial": 0,
+          "ok": true,
+          "reason": "ok",
+          "transport_error": false,
+          "latency_s": 2.54,
+          "n_tool_calls": 1,
+          "tool_names": [
+            "apply_patch"
+          ],
+          "completion_tokens": 54,
+          "prompt_tokens": 540,
+          "text_head": "",
+          "finish_reason": "tool_calls"
+        },
+        {
+          "trial": 1,
+          "ok": true,
+          "reason": "ok",
+          "transport_error": false,
+          "latency_s": 3.12,
+          "n_tool_calls": 1,
+          "tool_names": [
+            "apply_patch"
+          ],
+          "completion_tokens": 80,
+          "prompt_tokens": 540,
+          "text_head": "",
+          "finish_reason": "tool_calls"
+        },
+        {
+          "trial": 2,
+          "ok": true,
+          "reason": "ok",
+          "transport_error": false,
+          "latency_s": 1.83,
+          "n_tool_calls": 1,
+          "tool_names": [
+            "apply_patch"
+          ],
+          "completion_tokens": 45,
+          "prompt_tokens": 540,
+          "text_head": "",
+          "finish_reason": "tool_calls"
+        },
+        {
+          "trial": 3,
+          "ok": true,
+          "reason": "ok",
+          "transport_error": false,
+          "latency_s": 1.88,
+          "n_tool_calls": 1,
+          "tool_names": [
+            "apply_patch"
+          ],
+          "completion_tokens": 52,
+          "prompt_tokens": 540,
+          "text_head": "",
+          "finish_reason": "tool_calls"
+        },
+        {
+          "trial": 4,
+          "ok": true,
+          "reason": "ok",
+          "transport_error": false,
+          "latency_s": 1.94,
+          "n_tool_calls": 1,
+          "tool_names": [
+            "apply_patch"
+          ],
+          "completion_tokens": 52,
+          "prompt_tokens": 540,
+          "text_head": "",
+          "finish_reason": "tool_calls"
+        }
+      ]
+    },
+    "06_large_tool_set": {
+      "kind": "tool",
+      "tool_choice": "auto",
+      "expect_tool": "grep",
+      "passed": 3,
+      "trials": 5,
+      "pass_rate": 0.6,
+      "passed_lenient": 5,
+      "pass_rate_lenient": 1.0,
+      "median_latency_s": 0.82,
+      "required_zero_call_violations": 0,
+      "budget_exhausted": 0,
+      "detail": [
+        {
+          "trial": 0,
+          "ok": true,
+          "reason": "ok",
+          "transport_error": false,
+          "latency_s": 5.39,
+          "n_tool_calls": 1,
+          "tool_names": [
+            "grep"
+          ],
+          "completion_tokens": 18,
+          "prompt_tokens": 1122,
+          "text_head": "",
+          "finish_reason": "tool_calls"
+        },
+        {
+          "trial": 1,
+          "ok": false,
+          "reason": "EXTRA_CALLS: expected 1 call, got 2: ['grep', 'git_status']",
+          "transport_error": false,
+          "latency_s": 0.73,
+          "n_tool_calls": 2,
+          "tool_names": [
+            "grep",
+            "git_status"
+          ],
+          "completion_tokens": 16,
+          "prompt_tokens": 1122,
+          "text_head": "",
+          "finish_reason": "tool_calls"
+        },
+        {
+          "trial": 2,
+          "ok": true,
+          "reason": "ok",
+          "transport_error": false,
+          "latency_s": 0.81,
+          "n_tool_calls": 1,
+          "tool_names": [
+            "grep"
+          ],
+          "completion_tokens": 18,
+          "prompt_tokens": 1122,
+          "text_head": "",
+          "finish_reason": "tool_calls"
+        },
+        {
+          "trial": 3,
+          "ok": true,
+          "reason": "ok",
+          "transport_error": false,
+          "latency_s": 0.82,
+          "n_tool_calls": 1,
+          "tool_names": [
+            "grep"
+          ],
+          "completion_tokens": 18,
+          "prompt_tokens": 1122,
+          "text_head": "",
+          "finish_reason": "tool_calls"
+        },
+        {
+          "trial": 4,
+          "ok": false,
+          "reason": "EXTRA_CALLS: expected 1 call, got 2: ['grep', 'git_status']",
+          "transport_error": false,
+          "latency_s": 0.98,
+          "n_tool_calls": 2,
+          "tool_names": [
+            "grep",
+            "git_status"
+          ],
+          "completion_tokens": 22,
+          "prompt_tokens": 1122,
+          "text_head": "",
+          "finish_reason": "tool_calls"
+        }
+      ]
+    },
+    "07_tool_then_reasoning": {
+      "kind": "tool",
+      "tool_choice": "auto",
+      "expect_tool": null,
+      "passed": 0,
+      "trials": 5,
+      "pass_rate": 0.0,
+      "passed_lenient": 0,
+      "pass_rate_lenient": 0.0,
+      "median_latency_s": 1.6,
+      "required_zero_call_violations": 0,
+      "budget_exhausted": 0,
+      "detail": [
+        {
+          "trial": 0,
+          "ok": false,
+          "reason": "re-called a tool instead of concluding: ['read_file']",
+          "transport_error": false,
+          "latency_s": 3.29,
+          "n_tool_calls": 1,
+          "tool_names": [
+            "read_file"
+          ],
+          "completion_tokens": 14,
+          "prompt_tokens": 548,
+          "text_head": "",
+          "finish_reason": "tool_calls"
+        },
+        {
+          "trial": 1,
+          "ok": false,
+          "reason": "re-called a tool instead of concluding: ['read_file']",
+          "transport_error": false,
+          "latency_s": 0.63,
+          "n_tool_calls": 1,
+          "tool_names": [
+            "read_file"
+          ],
+          "completion_tokens": 14,
+          "prompt_tokens": 548,
+          "text_head": "",
+          "finish_reason": "tool_calls"
+        },
+        {
+          "trial": 2,
+          "ok": false,
+          "reason": "re-called a tool instead of concluding: ['grep']",
+          "transport_error": false,
+          "latency_s": 1.53,
+          "n_tool_calls": 1,
+          "tool_names": [
+            "grep"
+          ],
+          "completion_tokens": 32,
+          "prompt_tokens": 548,
+          "text_head": "",
+          "finish_reason": "tool_calls"
+        },
+        {
+          "trial": 3,
+          "ok": false,
+          "reason": "re-called a tool instead of concluding: ['read_file', 'grep']",
+          "transport_error": false,
+          "latency_s": 1.6,
+          "n_tool_calls": 2,
+          "tool_names": [
+            "read_file",
+            "grep"
+          ],
+          "completion_tokens": 40,
+          "prompt_tokens": 548,
+          "text_head": "",
+          "finish_reason": "tool_calls"
+        },
+        {
+          "trial": 4,
+          "ok": false,
+          "reason": "re-called a tool instead of concluding: ['run_shell']",
+          "transport_error": false,
+          "latency_s": 2.36,
+          "n_tool_calls": 1,
+          "tool_names": [
+            "run_shell"
+          ],
+          "completion_tokens": 58,
+          "prompt_tokens": 548,
+          "text_head": "",
+          "finish_reason": "tool_calls"
+        }
+      ]
+    },
+    "08_long_prompt_tool_use": {
+      "kind": "tool",
+      "tool_choice": "required",
+      "expect_tool": "run_shell",
+      "passed": 5,
+      "trials": 5,
+      "pass_rate": 1.0,
+      "passed_lenient": 5,
+      "pass_rate_lenient": 1.0,
+      "median_latency_s": 2.9,
+      "required_zero_call_violations": 0,
+      "budget_exhausted": 0,
+      "detail": [
+        {
+          "trial": 0,
+          "ok": true,
+          "reason": "ok",
+          "transport_error": false,
+          "latency_s": 16.21,
+          "n_tool_calls": 1,
+          "tool_names": [
+            "run_shell"
+          ],
+          "completion_tokens": 46,
+          "prompt_tokens": 4188,
+          "text_head": "",
+          "finish_reason": "tool_calls"
+        },
+        {
+          "trial": 1,
+          "ok": true,
+          "reason": "ok",
+          "transport_error": false,
+          "latency_s": 2.9,
+          "n_tool_calls": 1,
+          "tool_names": [
+            "run_shell"
+          ],
+          "completion_tokens": 75,
+          "prompt_tokens": 4188,
+          "text_head": "",
+          "finish_reason": "tool_calls"
+        },
+        {
+          "trial": 2,
+          "ok": true,
+          "reason": "ok",
+          "transport_error": false,
+          "latency_s": 4.04,
+          "n_tool_calls": 1,
+          "tool_names": [
+            "run_shell"
+          ],
+          "completion_tokens": 115,
+          "prompt_tokens": 4188,
+          "text_head": "",
+          "finish_reason": "tool_calls"
+        },
+        {
+          "trial": 3,
+          "ok": true,
+          "reason": "ok",
+          "transport_error": false,
+          "latency_s": 1.45,
+          "n_tool_calls": 1,
+          "tool_names": [
+            "run_shell"
+          ],
+          "completion_tokens": 38,
+          "prompt_tokens": 4188,
+          "text_head": "",
+          "finish_reason": "tool_calls"
+        },
+        {
+          "trial": 4,
+          "ok": true,
+          "reason": "ok",
+          "transport_error": false,
+          "latency_s": 2.53,
+          "n_tool_calls": 1,
+          "tool_names": [
+            "run_shell"
+          ],
+          "completion_tokens": 63,
+          "prompt_tokens": 4188,
+          "text_head": "",
+          "finish_reason": "tool_calls"
+        }
+      ]
+    },
+    "09_patch_generation": {
+      "kind": "tool",
+      "tool_choice": "required",
+      "expect_tool": "apply_patch",
+      "passed": 5,
+      "trials": 5,
+      "pass_rate": 1.0,
+      "passed_lenient": 5,
+      "pass_rate_lenient": 1.0,
+      "median_latency_s": 4.2,
+      "required_zero_call_violations": 0,
+      "budget_exhausted": 0,
+      "detail": [
+        {
+          "trial": 0,
+          "ok": true,
+          "reason": "ok",
+          "transport_error": false,
+          "latency_s": 4.36,
+          "n_tool_calls": 1,
+          "tool_names": [
+            "apply_patch"
+          ],
+          "completion_tokens": 53,
+          "prompt_tokens": 537,
+          "text_head": "",
+          "finish_reason": "tool_calls"
+        },
+        {
+          "trial": 1,
+          "ok": true,
+          "reason": "ok",
+          "transport_error": false,
+          "latency_s": 6.12,
+          "n_tool_calls": 1,
+          "tool_names": [
+            "apply_patch"
+          ],
+          "completion_tokens": 150,
+          "prompt_tokens": 537,
+          "text_head": "",
+          "finish_reason": "tool_calls"
+        },
+        {
+          "trial": 2,
+          "ok": true,
+          "reason": "ok",
+          "transport_error": false,
+          "latency_s": 4.2,
+          "n_tool_calls": 1,
+          "tool_names": [
+            "apply_patch"
+          ],
+          "completion_tokens": 120,
+          "prompt_tokens": 537,
+          "text_head": "",
+          "finish_reason": "tool_calls"
+        },
+        {
+          "trial": 3,
+          "ok": true,
+          "reason": "ok",
+          "transport_error": false,
+          "latency_s": 2.32,
+          "n_tool_calls": 1,
+          "tool_names": [
+            "apply_patch"
+          ],
+          "completion_tokens": 65,
+          "prompt_tokens": 537,
+          "text_head": "",
+          "finish_reason": "tool_calls"
+        },
+        {
+          "trial": 4,
+          "ok": true,
+          "reason": "ok",
+          "transport_error": false,
+          "latency_s": 3.89,
+          "n_tool_calls": 1,
+          "tool_names": [
+            "apply_patch"
+          ],
+          "completion_tokens": 106,
+          "prompt_tokens": 537,
+          "text_head": "",
+          "finish_reason": "tool_calls"
+        }
+      ]
+    },
+    "10_shell_generation": {
+      "kind": "tool",
+      "tool_choice": "required",
+      "expect_tool": "run_shell",
+      "passed": 5,
+      "trials": 5,
+      "pass_rate": 1.0,
+      "passed_lenient": 5,
+      "pass_rate_lenient": 1.0,
+      "median_latency_s": 1.14,
+      "required_zero_call_violations": 0,
+      "budget_exhausted": 0,
+      "detail": [
+        {
+          "trial": 0,
+          "ok": true,
+          "reason": "ok",
+          "transport_error": false,
+          "latency_s": 3.75,
+          "n_tool_calls": 1,
+          "tool_names": [
+            "run_shell"
+          ],
+          "completion_tokens": 56,
+          "prompt_tokens": 481,
+          "text_head": "",
+          "finish_reason": "tool_calls"
+        },
+        {
+          "trial": 1,
+          "ok": true,
+          "reason": "ok",
+          "transport_error": false,
+          "latency_s": 0.88,
+          "n_tool_calls": 1,
+          "tool_names": [
+            "run_shell"
+          ],
+          "completion_tokens": 22,
+          "prompt_tokens": 481,
+          "text_head": "",
+          "finish_reason": "tool_calls"
+        },
+        {
+          "trial": 2,
+          "ok": true,
+          "reason": "ok",
+          "transport_error": false,
+          "latency_s": 0.87,
+          "n_tool_calls": 1,
+          "tool_names": [
+            "run_shell"
+          ],
+          "completion_tokens": 22,
+          "prompt_tokens": 481,
+          "text_head": "",
+          "finish_reason": "tool_calls"
+        },
+        {
+          "trial": 3,
+          "ok": true,
+          "reason": "ok",
+          "transport_error": false,
+          "latency_s": 1.14,
+          "n_tool_calls": 1,
+          "tool_names": [
+            "run_shell"
+          ],
+          "completion_tokens": 31,
+          "prompt_tokens": 481,
+          "text_head": "",
+          "finish_reason": "tool_calls"
+        },
+        {
+          "trial": 4,
+          "ok": true,
+          "reason": "ok",
+          "transport_error": false,
+          "latency_s": 1.32,
+          "n_tool_calls": 1,
+          "tool_names": [
+            "run_shell"
+          ],
+          "completion_tokens": 32,
+          "prompt_tokens": 481,
+          "text_head": "",
+          "finish_reason": "tool_calls"
+        }
+      ]
+    },
+    "11_multistep_first_action": {
+      "kind": "tool",
+      "tool_choice": "auto",
+      "expect_tool": null,
+      "passed": 12,
+      "trials": 12,
+      "pass_rate": 1.0,
+      "passed_lenient": 12,
+      "pass_rate_lenient": 1.0,
+      "median_latency_s": 1.65,
+      "required_zero_call_violations": 0,
+      "budget_exhausted": 0,
+      "detail": [
+        {
+          "trial": 0,
+          "ok": true,
+          "reason": "ok",
+          "transport_error": false,
+          "latency_s": 6.99,
+          "n_tool_calls": 1,
+          "tool_names": [
+            "run_shell"
+          ],
+          "completion_tokens": 95,
+          "prompt_tokens": 647,
+          "text_head": "I'll build the `logstat` CLI step by step. Let me start by creating the project structure.",
+          "finish_reason": "tool_calls"
+        },
+        {
+          "trial": 1,
+          "ok": true,
+          "reason": "ok",
+          "transport_error": false,
+          "latency_s": 1.09,
+          "n_tool_calls": 1,
+          "tool_names": [
+            "run_shell"
+          ],
+          "completion_tokens": 27,
+          "prompt_tokens": 647,
+          "text_head": "",
+          "finish_reason": "tool_calls"
+        },
+        {
+          "trial": 2,
+          "ok": true,
+          "reason": "ok",
+          "transport_error": false,
+          "latency_s": 1.4,
+          "n_tool_calls": 1,
+          "tool_names": [
+            "run_shell"
+          ],
+          "completion_tokens": 37,
+          "prompt_tokens": 647,
+          "text_head": "",
+          "finish_reason": "tool_calls"
+        },
+        {
+          "trial": 3,
+          "ok": true,
+          "reason": "ok",
+          "transport_error": false,
+          "latency_s": 2.36,
+          "n_tool_calls": 1,
+          "tool_names": [
+            "run_shell"
+          ],
+          "completion_tokens": 61,
+          "prompt_tokens": 647,
+          "text_head": "I'll build the `logstat` CLI step by step. Let me start with the project skeleton.",
+          "finish_reason": "tool_calls"
+        },
+        {
+          "trial": 4,
+          "ok": true,
+          "reason": "ok",
+          "transport_error": false,
+          "latency_s": 1.17,
+          "n_tool_calls": 1,
+          "tool_names": [
+            "run_shell"
+          ],
+          "completion_tokens": 31,
+          "prompt_tokens": 647,
+          "text_head": "",
+          "finish_reason": "tool_calls"
+        },
+        {
+          "trial": 5,
+          "ok": true,
+          "reason": "ok",
+          "transport_error": false,
+          "latency_s": 1.67,
+          "n_tool_calls": 1,
+          "tool_names": [
+            "run_shell"
+          ],
+          "completion_tokens": 38,
+          "prompt_tokens": 647,
+          "text_head": "",
+          "finish_reason": "tool_calls"
+        },
+        {
+          "trial": 6,
+          "ok": true,
+          "reason": "ok",
+          "transport_error": false,
+          "latency_s": 1.14,
+          "n_tool_calls": 1,
+          "tool_names": [
+            "run_shell"
+          ],
+          "completion_tokens": 28,
+          "prompt_tokens": 647,
+          "text_head": "",
+          "finish_reason": "tool_calls"
+        },
+        {
+          "trial": 7,
+          "ok": true,
+          "reason": "ok",
+          "transport_error": false,
+          "latency_s": 2.09,
+          "n_tool_calls": 1,
+          "tool_names": [
+            "run_shell"
+          ],
+          "completion_tokens": 52,
+          "prompt_tokens": 647,
+          "text_head": "I'll start by checking the current repository state, then build the project.",
+          "finish_reason": "tool_calls"
+        },
+        {
+          "trial": 8,
+          "ok": true,
+          "reason": "ok",
+          "transport_error": false,
+          "latency_s": 2.35,
+          "n_tool_calls": 1,
+          "tool_names": [
+            "run_shell"
+          ],
+          "completion_tokens": 64,
+          "prompt_tokens": 647,
+          "text_head": "I'll build this step by step. Let me start by creating the directory structure and project files.",
+          "finish_reason": "tool_calls"
+        },
+        {
+          "trial": 9,
+          "ok": true,
+          "reason": "ok",
+          "transport_error": false,
+          "latency_s": 1.64,
+          "n_tool_calls": 1,
+          "tool_names": [
+            "run_shell"
+          ],
+          "completion_tokens": 37,
+          "prompt_tokens": 647,
+          "text_head": "",
+          "finish_reason": "tool_calls"
+        },
+        {
+          "trial": 10,
+          "ok": true,
+          "reason": "ok",
+          "transport_error": false,
+          "latency_s": 2.19,
+          "n_tool_calls": 1,
+          "tool_names": [
+            "run_shell"
+          ],
+          "completion_tokens": 56,
+          "prompt_tokens": 647,
+          "text_head": "I'll start building the `logstat` CLI project.",
+          "finish_reason": "tool_calls"
+        },
+        {
+          "trial": 11,
+          "ok": true,
+          "reason": "ok",
+          "transport_error": false,
+          "latency_s": 1.41,
+          "n_tool_calls": 1,
+          "tool_names": [
+            "run_shell"
+          ],
+          "completion_tokens": 36,
+          "prompt_tokens": 647,
+          "text_head": "",
+          "finish_reason": "tool_calls"
+        }
+      ]
+    }
+  },
+  "timestamp": "20260904T182652Z"
+}

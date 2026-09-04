@@ -1,0 +1,44 @@
+################ budget=1024 ################
+in force: --reasoning-budget 1024
+replaying capture seq=3: 2 messages, 53 tools, max_tokens=16384, model=glm-5.3-flash
+(captured stream=True, forced to False so usage is reported)
+
+rep   prompt_tok  completion  reason_ch finish           wall  calls
+0          17908        1076       4052 tool_calls     109.8s  ['bash']
+1          17908        1076       4279 tool_calls      48.3s  ['bash']
+2          17908         205        480 tool_calls       7.8s  ['bash', 'bash']
+3          17908        1097       3865 tool_calls      46.3s  ['bash']
+4          17908        1087       4146 tool_calls      43.8s  ['bash']
+5          17908        1069       3850 tool_calls      45.4s  ['bash']
+6          17908        1105       3841 tool_calls      47.7s  ['bash']
+7          17908        1091       4182 tool_calls      50.0s  ['bash']
+8          17908         220        502 tool_calls       8.3s  ['bash']
+9          17908        1128       4015 tool_calls      48.8s  ['bash']
+
+n=10  median=1082 tok  min=205  max=1128  mean=915
+wall: median=47.0s  max=109.8s
+finish_reasons: {'tool_calls': 10}
+budget-exhausted (length + no call + no content): 0/10
+runs over 8000 tokens: 0/10
+################ budget=4096 ################
+in force: --reasoning-budget 4096
+replaying capture seq=3: 2 messages, 53 tools, max_tokens=16384, model=glm-5.3-flash
+(captured stream=True, forced to False so usage is reported)
+
+rep   prompt_tok  completion  reason_ch finish           wall  calls
+0          17908        4160      16793 tool_calls     247.5s  ['bash']
+1          17908        4339      15388 tool_calls     187.7s  ['todowrite', 'bash']
+2          17908        4154      15843 tool_calls     185.1s  ['bash', 'bash']
+3          17908        4148      16234 tool_calls     188.3s  ['bash']
+4          17908        4330      16220 tool_calls     189.2s  ['todowrite', 'bash']
+5          17908        4158      15942 tool_calls     174.2s  ['bash']
+6          17908        4148      15042 tool_calls     181.4s  ['bash']
+7          17908        4194      15574 tool_calls     178.5s  ['bash']
+8          17908         237        245 tool_calls       8.5s  ['todowrite']
+9          17908        4140      15171 tool_calls     176.9s  ['bash']
+
+n=10  median=4156 tok  min=237  max=4339  mean=3801
+wall: median=183.3s  max=247.5s
+finish_reasons: {'tool_calls': 10}
+budget-exhausted (length + no call + no content): 0/10
+runs over 8000 tokens: 0/10

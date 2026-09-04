@@ -140,6 +140,69 @@ systematic bias.
 **Variance, not just latency, is the win.** 144× down to 1.1×. An agent loop with
 a coin-flip chance of an eleven-minute stall is unusable regardless of its median.
 
+### What "capping out" actually means
+
+Worth stating precisely, because it is not graceful degradation.
+
+GLM-5.3 generates in two phases: its reasoning inside a `<think>` block first,
+then the answer — content or tool calls. `finish_reason: length` means generation
+hit `max_tokens`. If the model was **still reasoning** when that ceiling arrived,
+the response ends before the second phase ever begins.
+
+The client receives a **200 OK with an empty message**: no tool call, no content.
+The thousands of reasoning tokens are discarded — an unfinished thought is not
+actionable — and an agent loop has nothing to proceed on. It is not "did as much
+as it could before running out". It is total loss, after eleven minutes, with no
+error to explain it.
+
+`--reasoning-budget` fixes this structurally rather than statistically. Thinking
+is forced to stop at the budget, the `--reasoning-budget-message` tells the model
+to act, and the remaining ~14,000 tokens of ceiling are still available for the
+answer. Reasoning can no longer consume the entire allowance, which is why every
+budget value tested produces zero cap-outs.
+
+### Choosing the budget value: the cap matters, the number does not
+
+Swept against the captured production request, n=10 each:
+
+| budget | median completion | median turn | tool calls | cap-outs |
+|---|---|---|---|---|
+| 1024 | 1,082 tok | **47 s** | 10/10 | **0/10** |
+| **2048** (shipped) | 2,116 tok | 93 s | 10/10 | **0/10** |
+| 4096 | 4,156 tok | 183 s | 10/10 | **0/10** |
+
+**Every value eliminates the failure.** Latency scales almost exactly linearly —
+each doubling doubles the turn — and `reason_chars` tracks the budget precisely
+(~4 chars per token), so the cap binds on nearly every run at every value.
+
+That makes 1024 tempting: half the latency, identical reliability. It was tested
+properly rather than assumed, two ways, at 1024 vs 2048:
+
+| | 1024 | 2048 |
+|---|---|---|
+| agentic scenarios | 9/11 | 9/11 |
+| strict | 56/62 | 55/62 |
+| lenient | 57/62 | 57/62 |
+| REQUIRED violations | 0 | 0 |
+| **agent loop: tests passing** | **11** | **16** |
+
+**The scenario suite finds no difference.** The real agent loop does: from the
+same task prompt, 2048 produced a more thorough test suite (16 vs 11 passing
+tests). Both built working software.
+
+**2048 is kept, and the reason is weak evidence rather than strong.** That agent
+loop comparison is **n=1 per arm**, and test count is not a clean quality metric.
+But the only measure that showed any difference favoured 2048, and the case for
+1024 was purely latency. Halving turn time is attractive; doing it against
+evidence that leans the other way is not.
+
+If turn latency matters more to you than a single-sample quality signal, 1024 is
+defensible — set `GLM53_REASONING_BUDGET=1024`. Settling it properly would need
+roughly five agent-loop runs per arm.
+
+**What is established:** the cap's *existence* is what fixes the failure, not its
+value. Any cap comfortably below `max_tokens` works.
+
 ### Verified across a real multi-turn conversation
 
 The budget was first validated on single turns (n=20 replays of one captured

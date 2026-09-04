@@ -1,0 +1,95 @@
+
+################################ budget=1024 ################################
+in force: --reasoning-budget 1024
+--- agentic suite (correctness) ---
+PASS  01_text_completion           5/5
+PASS  02_code_generation           5/5
+PASS  03_json_output               5/5
+PASS  04_required_tool_call        5/5
+PASS  05_multi_turn_tool_use       5/5
+EXTRA 06_large_tool_set            4/5  EXTRA_CALLS: expected 1 call, got 2: ['grep', 'run_shell']
+FAIL  07_tool_then_reasoning       0/5  re-called a tool instead of concluding: ['grep']; re-called a tool instead of concluding: ['read_file', 'grep']; re-called a tool instead of concluding: ['read_
+PASS  08_long_prompt_tool_use      5/5
+PASS  09_patch_generation          5/5
+PASS  10_shell_generation          5/5
+PASS  11_multistep_first_action    12/12
+
+scenarios fully passed : 9/11
+trial pass rate        : 56/62 strict, 57/62 lenient (extra calls forgiven)
+REQUIRED violations    : 0   (must be 0)
+budget exhausted       : 0   (planned past max_tokens with nothing actionable)
+saved: /home/cahlen/dev/glm-5.3-flash-GGUF-1bit-dgx-spark/results/20260904T181605Z-agentic-budget1024-quality.json
+--- real agent loop (does it build working software?) ---
+  .venv/lib/python3.12/site-packages/packaging/__pycache__/ranges.cpython-312.pyc (74275 bytes)
+  .venv/lib/python3.12/site-packages/packaging/__pycache__/requirements.cpython-312.pyc (8699 bytes)
+  .venv/lib/python3.12/site-packages/packaging/__pycache__/specifiers.cpython-312.pyc (57101 bytes)
+  .venv/lib/python3.12/site-packages/packaging/__pycache__/tags.cpython-312.pyc (41753 bytes)
+  .venv/lib/python3.12/site-packages/packaging/__pycache__/utils.cpython-312.pyc (13121 bytes)
+  .venv/lib/python3.12/site-packages/packaging/__pycache__/version.cpython-312.pyc (42325 bytes)
+  pytest-of-cahlen/pytest-0/test_p95_nearest_rank_smoke0/eight.jsonl (488 bytes)
+  pytest-of-cahlen/pytest-0/test_malformed_missing_key_exi0/missing.jsonl (51 bytes)
+  pytest-of-cahlen/pytest-0/test_empty_file0/empty.jsonl (0 bytes)
+  pytest-of-cahlen/pytest-0/test_malformed_line_exits_2_no0/bad.jsonl (77 bytes)
+  pytest-of-cahlen/pytest-0/test_level_filter_ignores_othe0/mixed.jsonl (185 bytes)
+  pytest-of-cahlen/pytest-1/test_p95_nearest_rank_smoke0/eight.jsonl (488 bytes)
+  pytest-of-cahlen/pytest-1/test_malformed_missing_key_exi0/missing.jsonl (51 bytes)
+  pytest-of-cahlen/pytest-1/test_empty_file0/empty.jsonl (0 bytes)
+  pytest-of-cahlen/pytest-1/test_malformed_line_exits_2_no0/bad.jsonl (77 bytes)
+  pytest-of-cahlen/pytest-1/test_level_filter_ignores_othe0/mixed.jsonl (185 bytes)
+  tests/conftest.py (147 bytes)
+  tests/test_cli.py (4416 bytes)
+  tests/__pycache__/conftest.cpython-312-pytest-9.1.1.pyc (642 bytes)
+  tests/__pycache__/test_cli.cpython-312-pytest-9.1.1.pyc (27562 bytes)
+  .pytest_cache/.gitignore (37 bytes)
+  .pytest_cache/CACHEDIR.TAG (191 bytes)
+  .pytest_cache/README.md (302 bytes)
+  .pytest_cache/v/cache/lastfailed (2 bytes)
+  .pytest_cache/v/cache/nodeids (592 bytes)
+
+################################ budget=2048 ################################
+in force: --reasoning-budget 2048
+--- agentic suite (correctness) ---
+PASS  01_text_completion           5/5
+PASS  02_code_generation           5/5
+PASS  03_json_output               5/5
+PASS  04_required_tool_call        5/5
+PASS  05_multi_turn_tool_use       5/5
+EXTRA 06_large_tool_set            3/5  EXTRA_CALLS: expected 1 call, got 2: ['grep', 'git_status']
+FAIL  07_tool_then_reasoning       0/5  re-called a tool instead of concluding: ['grep']; re-called a tool instead of concluding: ['read_file', 'grep']; re-called a tool instead of concluding: ['read_
+PASS  08_long_prompt_tool_use      5/5
+PASS  09_patch_generation          5/5
+PASS  10_shell_generation          5/5
+PASS  11_multistep_first_action    12/12
+
+scenarios fully passed : 9/11
+trial pass rate        : 55/62 strict, 57/62 lenient (extra calls forgiven)
+REQUIRED violations    : 0   (must be 0)
+budget exhausted       : 0   (planned past max_tokens with nothing actionable)
+saved: /home/cahlen/dev/glm-5.3-flash-GGUF-1bit-dgx-spark/results/20260904T182652Z-agentic-budget2048-quality.json
+--- real agent loop (does it build working software?) ---
+  pytest-of-cahlen/pytest-2/test_level_filter0/levels.jsonl (242 bytes)
+  pytest-of-cahlen/pytest-2/test_malformed_line_invalid_js0/bad.jsonl (96 bytes)
+  pytest-of-cahlen/pytest-1/test_malformed_line_never_trac0/bad.jsonl (16 bytes)
+  pytest-of-cahlen/pytest-1/test_happy_path0/in.jsonl (400 bytes)
+  pytest-of-cahlen/pytest-1/test_malformed_line_bad_durati0/bad.jsonl (74 bytes)
+  pytest-of-cahlen/pytest-1/test_malformed_line_missing_ke0/bad.jsonl (60 bytes)
+  pytest-of-cahlen/pytest-1/test_empty_file0/empty.jsonl (0 bytes)
+  pytest-of-cahlen/pytest-1/test_p95_nearest_rank0/in.jsonl (7992 bytes)
+  pytest-of-cahlen/pytest-1/test_default_format_is_table0/in.jsonl (79 bytes)
+  pytest-of-cahlen/pytest-1/test_format_json_and_level_com0/in.jsonl (161 bytes)
+  pytest-of-cahlen/pytest-1/test_format_json0/in.jsonl (400 bytes)
+  pytest-of-cahlen/pytest-1/test_empty_file_json0/empty.jsonl (0 bytes)
+  pytest-of-cahlen/pytest-1/test_level_filter_no_match0/levels.jsonl (80 bytes)
+  pytest-of-cahlen/pytest-1/test_level_filter0/levels.jsonl (242 bytes)
+  pytest-of-cahlen/pytest-1/test_malformed_line_invalid_js0/bad.jsonl (96 bytes)
+  tests/__init__.py (0 bytes)
+  tests/test_logstat.py (7217 bytes)
+  tests/__pycache__/__init__.cpython-312.pyc (155 bytes)
+  tests/__pycache__/test_logstat.cpython-312-pytest-9.1.1.pyc (41268 bytes)
+  __pycache__/conftest.cpython-312-pytest-9.1.1.pyc (537 bytes)
+  .pytest_cache/.gitignore (37 bytes)
+  .pytest_cache/CACHEDIR.TAG (191 bytes)
+  .pytest_cache/README.md (302 bytes)
+  .pytest_cache/v/cache/lastfailed (2 bytes)
+  .pytest_cache/v/cache/nodeids (848 bytes)
+== restoring glm53.env ==
