@@ -193,8 +193,16 @@ Swept against the captured production request, n=10 each:
 | budget | median completion | median turn | tool calls | cap-outs |
 |---|---|---|---|---|
 | 1024 | 1,082 tok | **47 s** | 10/10 | **0/10** |
-| **2048** (shipped) | 2,116 tok | 93 s | 10/10 | **0/10** |
+| **2048** (shipped) | 2,140 tok | 95 s | 10/10 | **0/10** |
 | 4096 | 4,156 tok | 183 s | 10/10 | **0/10** |
+
+Raw output: [`results/20260904-budget-sweep-1024-4096.txt`](results/20260904-budget-sweep-1024-4096.txt)
+for 1024 and 4096, and
+[`results/20260908-budget-headline-rerun.txt`](results/20260908-budget-headline-rerun.txt)
+for 2048 — that arm was originally measured interactively and never written to
+`results/`, so it was re-run to archive it. It reproduced: 2,140 tok against the
+2,116 first reported, a ~1% difference, with 10/10 tool calls and 0/10 cap-outs
+both times.
 
 **Every value eliminates the failure.** Latency scales almost exactly linearly —
 each doubling doubles the turn — and `reason_chars` tracks the budget precisely
@@ -262,9 +270,9 @@ Replaying the real 17,908-token request, n=10 per arm:
 | **128** | 204 tok | 171–370 | 0/10 |
 | **256** | 396 | 203–588 | 0/10 |
 | **512** | 588 | 559–752 | 0/10 |
-| 1024 | 1,082 | — | 0/10 |
-| 2048 | 2,116 | — | 0/10 |
-| 4096 | 4,156 | — | 0/10 |
+| 1024 | 1,082 | 205–1,128 | 0/10 |
+| 2048 | 2,140 | 68–2,285 | 0/10 |
+| 4096 | 4,156 | 237–4,339 | 0/10 |
 
 The cap binds precisely at every level — completion tracks it almost exactly. At
 128 that is a **78× reduction** from the unrestricted median of 15,867 tokens.
