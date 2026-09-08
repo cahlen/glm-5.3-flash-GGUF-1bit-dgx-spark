@@ -581,4 +581,25 @@ SCENARIOS = [
 # model quality miss — bench_agentic.py reports these separately.
 REQUIRED_SCENARIOS = [s["id"] for s in SCENARIOS if s["tool_choice"] == "required"]
 
+# WHAT THIS SUITE CANNOT MEASURE
+#
+# Every prompt here is small: max 4,188 tokens, median 540, and the largest
+# completion across the eight tool scenarios is under 300 tokens. That makes the
+# suite structurally incapable of testing --reasoning-budget: a 1024-token cap
+# cannot bind on a 300-token completion, so budget_exhausted is 0 by arithmetic
+# and two budget arms cannot differ on it.
+#
+# It is also mostly constant. Across 16 full-suite runs spanning both quants,
+# both KV types, three samplers, three reasoning efforts, two llama.cpp binaries
+# and two budgets: 01,02,03,04,05,10,11 pass 1.00 in EVERY run, and 07 fails
+# 0.00 in EVERY run (0/68 strict). Only 06, 08 and 09 move at all, and 06 spans
+# the full 0.00-1.00.
+#
+# Use it for what it does measure: tool-call correctness on small prompts, and
+# in particular the tool_choice=required guarantee. For anything about reasoning
+# length, latency or large-context behaviour, replay a captured production
+# request instead (~/glm53-capture/replay_real.py, agent_loop.py).
+#
+# Credit: dipankarsarkar, who derived this from the result JSONs.
+
 SCENARIOS_BY_ID = {s["id"]: s for s in SCENARIOS}

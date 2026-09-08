@@ -1,0 +1,85 @@
+
+################################ budget=128 ################################
+in force: --reasoning-budget 128
+--- replay of the real 17,908-token request, n=10 ---
+replaying capture seq=3: 2 messages, 53 tools, max_tokens=16384, model=glm-5.3-flash
+(captured stream=True, forced to False so usage is reported)
+
+rep   prompt_tok  completion  reason_ch finish           wall  calls
+0          17908         171        652 tool_calls      72.6s  ['bash']
+1          17908         370        546 tool_calls      13.7s  ['todowrite']
+2          17908         174        548 tool_calls       7.0s  ['bash']
+3          17908         322        555 tool_calls      11.7s  ['todowrite']
+4          17908         368        547 tool_calls      13.0s  ['todowrite']
+5          17908         333        554 tool_calls      11.9s  ['todowrite']
+6          17908         219        536 tool_calls       8.4s  ['bash', 'bash']
+7          17908         180        523 tool_calls       7.0s  ['bash']
+8          17908         171        571 tool_calls       6.9s  ['bash']
+9          17908         188        541 tool_calls       7.2s  ['bash']
+
+n=10  median=204 tok  min=171  max=370  mean=250
+wall: median=10.0s  max=72.6s
+finish_reasons: {'tool_calls': 10}
+budget-exhausted (length + no call + no content): 0/10
+runs over 8000 tokens: 0/10
+--- agent loop x3: does it still build working software? ---
+FLOOR budget=128   run=1 turns=17  wall=5.2    exhausted=0   done=1  tests_passed=15   tests_failed=0   
+FLOOR budget=128   run=2 turns=18  wall=7.9    exhausted=0   done=1  tests_passed=22   tests_failed=0   
+FLOOR budget=128   run=3 turns=7   wall=3.0    exhausted=0   done=1  tests_passed=8    tests_failed=0   
+
+################################ budget=256 ################################
+in force: --reasoning-budget 256
+--- replay of the real 17,908-token request, n=10 ---
+replaying capture seq=3: 2 messages, 53 tools, max_tokens=16384, model=glm-5.3-flash
+(captured stream=True, forced to False so usage is reported)
+
+rep   prompt_tok  completion  reason_ch finish           wall  calls
+0          17908         310       1014 tool_calls      75.4s  ['bash']
+1          17908         329       1101 tool_calls      14.2s  ['bash']
+2          17908         460       1000 tool_calls      17.0s  ['todowrite']
+3          17908         326       1067 tool_calls      13.5s  ['bash']
+4          17908         203        524 tool_calls       8.4s  ['bash']
+5          17908         588       1082 tool_calls      21.9s  ['todowrite', 'bash']
+6          17908         332       1011 tool_calls      12.7s  ['bash']
+7          17908         501       1045 tool_calls      18.2s  ['todowrite', 'bash']
+8          17908         481       1012 tool_calls      17.5s  ['todowrite']
+9          17908         489       1060 tool_calls      18.5s  ['bash', 'todowrite']
+
+n=10  median=396 tok  min=203  max=588  mean=402
+wall: median=17.2s  max=75.4s
+finish_reasons: {'tool_calls': 10}
+budget-exhausted (length + no call + no content): 0/10
+runs over 8000 tokens: 0/10
+--- agent loop x3: does it still build working software? ---
+FLOOR budget=256   run=1 turns=20  wall=7.7    exhausted=0   done=0  tests_passed=18   tests_failed=0   
+FLOOR budget=256   run=2 turns=20  wall=9.2    exhausted=0   done=0  tests_passed=19   tests_failed=0   
+FLOOR budget=256   run=3 turns=17  wall=8.2    exhausted=0   done=1  tests_passed=19   tests_failed=0   
+
+################################ budget=512 ################################
+in force: --reasoning-budget 512
+--- replay of the real 17,908-token request, n=10 ---
+replaying capture seq=3: 2 messages, 53 tools, max_tokens=16384, model=glm-5.3-flash
+(captured stream=True, forced to False so usage is reported)
+
+rep   prompt_tok  completion  reason_ch finish           wall  calls
+0          17908         586       1961 tool_calls      89.5s  ['bash', 'bash']
+1          17908         579       2189 tool_calls      23.6s  ['bash', 'bash']
+2          17908         594       2175 tool_calls      25.2s  ['bash']
+3          17908         559       2137 tool_calls      24.2s  ['bash']
+4          17908         559       2144 tool_calls      24.0s  ['bash']
+5          17908         752       2040 tool_calls      29.8s  ['todowrite']
+6          17908         589       1995 tool_calls      25.8s  ['bash']
+7          17908         739       2034 tool_calls      30.7s  ['todowrite', 'bash']
+8          17908         733       2081 tool_calls      31.4s  ['todowrite']
+9          17908         582       2057 tool_calls      23.5s  ['bash']
+
+n=10  median=588 tok  min=559  max=752  mean=627
+wall: median=25.5s  max=89.5s
+finish_reasons: {'tool_calls': 10}
+budget-exhausted (length + no call + no content): 0/10
+runs over 8000 tokens: 0/10
+--- agent loop x3: does it still build working software? ---
+FLOOR budget=512   run=1 turns=12  wall=4.7    exhausted=0   done=1  tests_passed=11   tests_failed=0   
+FLOOR budget=512   run=2 turns=10  wall=3.4    exhausted=0   done=1  tests_passed=11   tests_failed=0   
+FLOOR budget=512   run=3 turns=13  wall=5.4    exhausted=0   done=1  tests_passed=10   tests_failed=0   
+== restoring glm53.env ==

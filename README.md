@@ -247,6 +247,90 @@ thinking about it.** 1024, 2048 and 4096 all give zero cap-outs, all complete
 builds, and statistically indistinguishable results. The value is not worth
 tuning; its absence is what costs 45% of your turns.
 
+### Looking for the floor: none found down to 128
+
+The three values above establish a ceiling of safety and locate no cliff. If the
+cap can be lowered indefinitely, "2048 has margin" is meaningless — the question
+is where reasoning starts getting cut that the model actually needed. Raised by
+[@dipankarsarkar](https://huggingface.co/dipankarsarkar), who also showed the
+scenario suite could never have answered it (see below).
+
+Replaying the real 17,908-token request, n=10 per arm:
+
+| budget | median completion | min–max | cap-outs |
+|---|---|---|---|
+| **128** | 204 tok | 171–370 | 0/10 |
+| **256** | 396 | 203–588 | 0/10 |
+| **512** | 588 | 559–752 | 0/10 |
+| 1024 | 1,082 | — | 0/10 |
+| 2048 | 2,116 | — | 0/10 |
+| 4096 | 4,156 | — | 0/10 |
+
+The cap binds precisely at every level — completion tracks it almost exactly. At
+128 that is a **78× reduction** from the unrestricted median of 15,867 tokens.
+
+Three agent-loop builds per arm, scored on whether their own tests pass:
+
+| budget | turns | tests passing | reported DONE |
+|---|---|---|---|
+| 128 | 17, 18, 7 | 15, 22, 8 | 3/3 |
+| 256 | 17, **20**, **20** | 18, 19, 19 | **1/3** |
+| 512 | 12, 10, 13 | 11, 11, 10 | 3/3 |
+
+**Every arm built working software with zero test failures, including at 128
+tokens of thinking.** Two 256 runs hit the 20-turn ceiling without
+self-declaring DONE — but they had written *more* tests (18, 19) than the
+completing runs, so they were mid-work rather than broken, and 128 completed
+3/3, which rules out a monotonic "tighter is worse" story. At n=3 that anomaly
+is not distinguishable from variance.
+
+**So no floor was found in the tested range.** 2048 is therefore *conservative,
+not calibrated* — it sits in a region where no cliff has been located at all,
+and values 4–8× lower appear viable. It is kept because it costs nothing and the
+2048-vs-1024 comparison already showed the value does not matter; not because it
+was shown to be the minimum safe setting.
+
+Caveats: n=3 per arm on the loop, and test count is not a clean quality metric —
+512 produced the *fewest* tests (10–11) while completing fastest, which could be
+efficiency or thinner work. Separating those needs a quality judgement this
+harness does not make.
+
+### What the scenario suite cannot measure
+
+`bench_agentic.py` **cannot test the reasoning budget at all**, and the
+`budget_exhausted: 0` it reports for every arm is arithmetic rather than a
+result. Demonstrated by [@dipankarsarkar](https://huggingface.co/dipankarsarkar)
+from the JSONs in `results/`, and verified:
+
+| | scenario suite | the failing request |
+|---|---|---|
+| max prompt | 4,188 tok (median 540) | 17,908 tok |
+| max completion, tool scenarios | 288 / 150 | median 15,867 |
+| largest tool set | 17, in one scenario | 53 |
+
+A 1024-token cap cannot bind on a 300-token completion, so the two budget arms
+could not have differed on it however many trials were run.
+
+It is worse than uninformative. Across all 16 full-suite runs — spanning both
+quants, both KV types, three samplers, three reasoning efforts, two llama.cpp
+binaries and both budgets — seven scenarios pass 1.00 in **every** run and
+`07_tool_then_reasoning` fails 0.00 in every run (**0/68** strict). In the budget
+arms that is 42 trials that always pass and 5 that always fail: **47 of 62
+frozen**, 15 able to move at all.
+
+So the headline `56/62 vs 55/62` is really **14/15 vs 13/15**, and the entire
+difference is **one trial in `06_large_tool_set`** (4/5 vs 3/5) — the single
+least stable cell in the matrix, ranging 0.00–1.00 across the other runs. Every
+other scenario is identical between the arms.
+
+**The suite measures tool-call correctness on small prompts, and that is all.**
+It is genuinely useful for that: zero `tool_choice=required` violations across
+every run is a real guarantee. But any claim about reasoning length, latency, or
+large-context behaviour has to come from `~/glm53-capture/replay_real.py` and
+`agent_loop.py` against a captured production request. The budget conclusion
+rests on the agent-loop runs (U=9.0), and always did — the suite ratio was never
+load-bearing evidence and should not have been presented alongside it.
+
 **What is established:** the cap's *existence* is what fixes the failure, not its
 value. Any cap comfortably below `max_tokens` works.
 
