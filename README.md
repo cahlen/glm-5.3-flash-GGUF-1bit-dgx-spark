@@ -150,7 +150,8 @@ definitions), n=20 per arm, identical input, both arms archived:
 | **worst** turn | **12.2 min** | **1.8 min** |
 | spread across runs | 145–16,384 (113×) | 156–2,356 (15×) |
 
-Fisher exact: **p = 0.024** on the cap-outs, **p = 0.0002** on the runaways.
+Fisher exact, one-tailed: **p = 0.024** on the cap-outs (0.047 two-tailed),
+**p = 0.0002** on the runaways.
 Raw output:
 [`results/20260908-budget-headline-rerun.txt`](results/20260908-budget-headline-rerun.txt)
 and [`results/20260908-budget-2048-n20.txt`](results/20260908-budget-2048-n20.txt).
