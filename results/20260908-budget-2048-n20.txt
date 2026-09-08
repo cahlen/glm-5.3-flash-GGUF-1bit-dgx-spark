@@ -1,0 +1,39 @@
+# The 2048 arm at n=20, to match the unrestricted arm of the headline table
+# host=spark-f688  started=2026-09-08T14:12:19-07:00
+# repo commit=397666d
+# replaying captured OpenCode request seq=3 (17,908 prompt tokens, 53 tool definitions)
+
+################################ reasoning-budget=2048  (n=20) ################################
+in force: reasoning-budget 2048
+replaying capture seq=3: 2 messages, 53 tools, max_tokens=16384, model=glm-5.3-flash
+(captured stream=True, forced to False so usage is reported)
+
+rep   prompt_tok  completion  reason_ch finish           wall  calls
+0          17908         196        598 tool_calls      72.8s  ['bash']
+1          17908        2356       8325 tool_calls     107.3s  ['todowrite', 'bash']
+2          17908        2112       8014 tool_calls     103.8s  ['bash']
+3          17908        2123       8324 tool_calls      98.3s  ['bash']
+4          17908        2094       8219 tool_calls      91.3s  ['bash']
+5          17908        2130       7881 tool_calls      97.9s  ['bash']
+6          17908        2168       8075 tool_calls      94.5s  ['bash', 'bash']
+7          17908         156        458 tool_calls       6.1s  ['bash']
+8          17908         669       1918 tool_calls      28.1s  ['todowrite']
+9          17908        2132       8109 tool_calls      91.3s  ['bash']
+10         17908        2110       7638 tool_calls      92.8s  ['bash']
+11         17908        2126       8439 tool_calls      96.2s  ['bash']
+12         17908        2102       8097 tool_calls      89.0s  ['bash']
+13         17908        2150       7376 tool_calls      94.0s  ['bash']
+14         17908        2134       7752 tool_calls      89.1s  ['bash', 'bash']
+15         17908        2122       8284 tool_calls      90.4s  ['bash']
+16         17908        2127       8155 tool_calls      90.9s  ['bash']
+17         17908        2104       8011 tool_calls      89.2s  ['bash']
+18         17908        2286       8007 tool_calls     104.3s  ['bash', 'todowrite']
+19         17908         197        574 tool_calls       7.9s  ['bash']
+
+n=20  median=2122 tok  min=156  max=2356  mean=1780
+wall: median=91.3s  max=107.3s
+finish_reasons: {'tool_calls': 20}
+budget-exhausted (length + no call + no content): 0/20
+runs over 8000 tokens: 0/20
+
+== finished 2026-09-08T14:40:23-07:00 ==

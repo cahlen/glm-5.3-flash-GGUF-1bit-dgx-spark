@@ -102,16 +102,24 @@ def test_draft_model_is_not_emitted_even_via_extra():
 # ------------------------------------------------------------------ reasoning
 
 def test_reasoning_budget_is_capped_not_unrestricted():
-    """Unrestricted reasoning fails 45% of real agentic turns.
+    """Unrestricted reasoning returns nothing on about a third of real turns.
 
     Measured by replaying a captured OpenCode request (17,908 prompt tokens,
-    53 tools), n=20 per arm: unrestricted returned a tool call 11/20 and hit the
-    output ceiling with nothing actionable 9/20; with a 2048 budget it was 20/20
-    and 0/20. Median turn latency fell from 11.2 min to 1.6 min. This is the
-    difference between the setup being usable and not.
+    53 tools), n=20 per arm, archived in results/20260908-budget-headline-rerun
+    .txt and results/20260908-budget-2048-n20.txt: unrestricted returned a tool
+    call 15/20 and hit the output ceiling with nothing actionable 5/20; with a
+    2048 budget it was 20/20 and 0/20 (Fisher p=0.024). The worst turn fell from
+    12.2 min to 1.8 min.
+
+    The rate is quoted as a range on purpose. Two runs on identical config gave
+    9/20 and 5/20 (Fisher p=0.32 between them, i.e. no disagreement), pooling to
+    14/40 = 35% with a 22-50% interval. An earlier version of this docstring
+    asserted a flat 45% from the first run alone. Do not re-narrow it without
+    more than n=20 -- and do not use a median here, the distribution is bimodal
+    (see the README section on it).
     """
     out = dry()
-    assert "--reasoning-budget" in out, "unrestricted reasoning caps out ~45% of turns"
+    assert "--reasoning-budget" in out, "unrestricted reasoning returns nothing on ~1/3 of turns"
     assert "--reasoning-budget 2048" in out
 
 

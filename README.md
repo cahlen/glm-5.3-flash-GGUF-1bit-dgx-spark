@@ -16,9 +16,10 @@ are in this repo and the raw results are in [`results/`](results/).
 > --reasoning-budget 2048
 > ```
 >
-> Without it, **45% of realistic agentic turns return nothing at all** — no tool
-> call, no content, after ~11 minutes. Measured n=20 on a real captured request.
-> With it: **0/20**.
+> Without it, **about a third of realistic agentic turns return nothing at all**
+> — no tool call, no content, after as long as twelve minutes. Measured 14/40
+> (35%, CI 22–50%) across two runs on a real captured request. With it: **0 in 80
+> runs**, at every budget value tested.
 >
 > llama.cpp defaults to `-1` (unrestricted). GLM-5.3 reasons inside a `<think>`
 > block *before* emitting its answer, so on a large prompt it can consume the
@@ -72,7 +73,7 @@ configuration above. Raw JSON for every figure is in [`results/`](results/).
 | **Model load** | **38 s** cold (86.7 GiB of weights) |
 | **Resident memory** | **90.9 GiB**, leaving ~22 GiB free |
 | **Context** | **131,072** tokens (q8_0 KV) · 256K possible, see §7 |
-| **Agentic turn latency** | **~1.6 min** median on a 17.9K-token, 53-tool prompt |
+| **Agentic turn latency** | **~1.5 min** median, **1.8 min** worst, on a 17.9K-token, 53-tool prompt |
 | **Session cold start** | 34 s prefill (16 tools) · 64.8 s (53 tools) |
 
 Decode is content-dependent, which is a property of speculative decoding rather
@@ -136,20 +137,75 @@ decides whether the setup works at all.
 
 Left unrestricted (llama.cpp's default), GLM-5.3 on a realistic agentic prompt
 frequently reasons until it hits the output ceiling and returns **nothing the
-client can act on** — no tool call, no content, after eleven minutes. Measured by
+client can act on** — no tool call, no content, after twelve minutes. Measured by
 replaying a **real captured OpenCode request** (17,908 prompt tokens, 53 tool
-definitions), n=20 per arm, identical input:
+definitions), n=20 per arm, identical input, both arms archived:
 
 | | unrestricted | **`--reasoning-budget 2048`** |
 |---|---|---|
-| returned a tool call | 11/20 | **20/20** |
-| hit the cap with nothing actionable | **9/20 (45%)** | **0/20** |
-| over 8,000 completion tokens | 13/20 (65%) | 0/20 |
-| median completion | 15,867 tok | **2,145 tok** |
-| median turn latency | **11.2 min** | **1.6 min** |
-| spread across runs | 166–16,384 (**144×**) | 2,092–2,297 (**1.1×**) |
+| returned a tool call | 15/20 | **20/20** |
+| hit the ceiling with nothing actionable | **5/20 (25%)** | **0/20** |
+| over 8,000 completion tokens | 10/20 (50%) | **0/20** |
+| median turn latency | 5.6 min | **1.5 min** |
+| **worst** turn | **12.2 min** | **1.8 min** |
+| spread across runs | 145–16,384 (113×) | 156–2,356 (15×) |
 
-Fisher exact on the cap-outs: **p ≈ 0.0008**.
+Fisher exact: **p = 0.024** on the cap-outs, **p = 0.0002** on the runaways.
+Raw output:
+[`results/20260908-budget-headline-rerun.txt`](results/20260908-budget-headline-rerun.txt)
+and [`results/20260908-budget-2048-n20.txt`](results/20260908-budget-2048-n20.txt).
+
+### The distribution is bimodal — do not trust a median here
+
+This took two runs to see. Sorted completion lengths, unrestricted:
+
+```
+145  162  173  293  359  473  622  757  1604  ┊  6213   9225   9993   12220
+                                              ┊  16056  16122  16384 x5
+```
+
+Nine runs finished under 1,604 tokens. Eleven ran past 6,213. **Nothing landed in
+between.** There is no "typical" turn — the model either answers in twenty seconds
+or thinks for twelve minutes, and five runs hit the 16,384 ceiling exactly.
+
+The budgeted arm is bimodal too, which is the clearest way to see what the cap
+actually does:
+
+| | fast mode | slow mode |
+|---|---|---|
+| unrestricted | 9 runs, 145–1,604 tok | 11 runs, **6,213–16,384** |
+| **budget 2048** | 4 runs, 156–669 tok | 16 runs, **2,094–2,356** |
+
+**The cap does not remove the fast mode. It truncates the slow one**, pinning it
+at the budget instead of letting it run to the output ceiling. That is the entire
+mechanism.
+
+It also means **a median is the wrong statistic for this workload**, and an
+earlier version of this document was caught by exactly that. Because the median
+falls in the empty gap, it jumps between the two modes depending on which side of
+50% the runaway rate lands: an earlier run with 65% runaways reported a median of
+15,867 tokens; this one, with 50%, reports 7,719. Neither describes a turn that
+ever happened. Report the runaway **rate** and the **worst case**, not the middle.
+
+### The rate: about a third, ±14 points
+
+The cap-out rate has now been measured twice on identical configuration —
+`top_p`, `min_p`, `top_k` and `reasoning_effort` were unchanged between them:
+
+| | rate | 95% CI |
+|---|---|---|
+| first run (not archived) | 9/20 = 45% | 26–66% |
+| re-run (archived) | 5/20 = 25% | 11–47% |
+| **pooled** | **14/40 = 35%** | **22–50%** |
+
+Fisher on 9/20 vs 5/20 is **p = 0.32** — the two runs do not disagree. A ~35% rate
+measured at n=20 simply carries a ±20-point interval, so the honest claim is
+**about a third of turns**, not a precise 45%. This document previously quoted the
+single 45% figure as though it were exact; it was one draw.
+
+Across every capped arm run here — 2048 at n=20 and n=10, plus 128/256/512/1024/
+4096 at n=10 each — there are **0 cap-outs in 80 runs**. Pooled against that,
+p = 3.5×10⁻⁸.
 
 Three things worth drawing out.
 
@@ -157,13 +213,14 @@ Three things worth drawing out.
 the budget are the same ones the fast unrestricted runs produced. The extra
 14,000 tokens of thinking did not lead somewhere better; it led nowhere.
 
-**`reason_chars` sits at ~8,000 on every single budgeted run** — the budget binds
-every time. On a prompt this size the model always wants to think longer than is
-useful, so this is not clipping an occasional outlier; it is correcting a
-systematic bias.
+**`reason_chars` sits at ~8,000 on 16 of the 20 budgeted runs** — whenever the
+model enters the slow mode, the budget binds. On a prompt this size it reliably
+wants to think for longer than is useful, so this is not clipping an occasional
+outlier; it is correcting a systematic bias.
 
-**Variance, not just latency, is the win.** 144× down to 1.1×. An agent loop with
-a coin-flip chance of an eleven-minute stall is unusable regardless of its median.
+**The worst case, not the median, is the win.** 12.2 min down to 1.8 min. An agent
+loop with a one-in-four chance of a twelve-minute stall that returns nothing is
+unusable regardless of its median.
 
 ### What "capping out" actually means
 
@@ -253,7 +310,7 @@ is, points the other way.
 **Practical reading: pick any cap comfortably below `max_tokens` and stop
 thinking about it.** 1024, 2048 and 4096 all give zero cap-outs, all complete
 builds, and statistically indistinguishable results. The value is not worth
-tuning; its absence is what costs 45% of your turns.
+tuning; its absence is what costs about a third of your turns.
 
 ### Looking for the floor: none found down to 128
 
@@ -275,7 +332,10 @@ Replaying the real 17,908-token request, n=10 per arm:
 | 4096 | 4,156 | 237–4,339 | 0/10 |
 
 The cap binds precisely at every level — completion tracks it almost exactly. At
-128 that is a **78× reduction** from the unrestricted median of 15,867 tokens.
+128, completions run ~204 tokens against an unrestricted slow mode of
+6,213–16,384, a **30–80× reduction** in the runs that would otherwise run away.
+(An earlier version quoted "78× off a median of 15,867"; that median was an
+artefact of a bimodal distribution — see above.)
 
 Three agent-loop builds per arm, scored on whether their own tests pass:
 
@@ -313,7 +373,7 @@ from the JSONs in `results/`, and verified:
 | | scenario suite | the failing request |
 |---|---|---|
 | max prompt | 4,188 tok (median 540) | 17,908 tok |
-| max completion, tool scenarios | 288 / 150 | median 15,867 |
+| max completion, tool scenarios | 288 / 150 | 6,213–16,384 when it runs away |
 | largest tool set | 17, in one scenario | 53 |
 
 A 1024-token cap cannot bind on a 300-token completion, so the two budget arms
@@ -399,7 +459,7 @@ slow, shorter conversations beat a shorter tool list.
 This document originally led with decode throughput. That was the wrong
 emphasis, and the ordering below is what the measurements actually support:
 
-1. **`--reasoning-budget 2048`** — 45% total-failure → 0%. Nothing else compares.
+1. **`--reasoning-budget 2048`** — ~35% total-failure → 0%. Nothing else compares.
 2. **Session hygiene** — start fresh conversations; a history-growth turn costs
    30s+ of prefill regardless of configuration.
 3. **Trim the MCP tool surface** — ~30s off session start, ~8% more context.
@@ -415,7 +475,7 @@ The bench suite measured **correctness** on ten single-step scenarios with a
 small tool surface, and **decode throughput** on short prompts. It could not see
 this: the failure needs a large tool surface and a multi-step task, and it
 presents as latency rather than a wrong answer. Throughput was tuned to a ±3%
-noise floor while a 45% total-failure rate sat unmeasured in a dimension nobody
+noise floor while a ~35% total-failure rate sat unmeasured in a dimension nobody
 sampled.
 
 Five plausible causes were proposed and refuted before the real one was found —

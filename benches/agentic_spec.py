@@ -565,12 +565,16 @@ SCENARIOS = [
         # Raising max_tokens does not fix it, it moves the cliff. The fix is in
         # the prompt: see the README section on multi-step prompts.
         "max_tokens": 2048,
-        # 5 trials is underpowered against a failure that occurred ~45% of the
-        # time on the unrestricted config: it would miss it entirely about 5% of
-        # runs, and the FIRST run of this scenario passed 5/5 and was wrongly
-        # read as healthy. With --reasoning-budget shipped the failure should no
-        # longer occur at all, so this is now a regression guard: if the budget
-        # is ever removed or raised too far, this is what catches it.
+        # 5 trials is underpowered against a failure that occurs ~35% of the
+        # time on the unrestricted config (14/40 pooled, CI 22-50%): it would
+        # miss it entirely about 12% of runs, roughly one in eight, and the
+        # FIRST run of this scenario passed 5/5 and was wrongly read as healthy.
+        # 12 trials brings that to 0.6%. The rate was previously believed to be
+        # 45%, which put the 5-trial miss rate at 5%; the correction makes the
+        # case for min_trials stronger, not weaker. With --reasoning-budget
+        # shipped the failure should not occur at all, so this is now a
+        # regression guard: if the budget is ever removed or raised too far,
+        # this is what catches it.
         "min_trials": 12,
         "check": _check_multistep_first_action,
     },
