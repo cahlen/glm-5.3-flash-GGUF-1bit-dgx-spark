@@ -602,7 +602,7 @@ REQUIRED_SCENARIOS = [s["id"] for s in SCENARIOS if s["tool_choice"] == "require
 # Use it for what it does measure: tool-call correctness on small prompts, and
 # in particular the tool_choice=required guarantee. For anything about reasoning
 # length, latency or large-context behaviour, replay a captured production
-# request instead (~/glm53-capture/replay_real.py, agent_loop.py).
+# request instead (harness/replay_real.py, harness/agent_loop.py).
 #
 # Credit: dipankarsarkar, who derived this from the result JSONs.
 

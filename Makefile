@@ -19,7 +19,7 @@ test:
 # history were pushed red because CI was used as the linter instead of this.
 # shellcheck is a python package, so it needs no root: uv tool install shellcheck-py
 lint:
-	shellcheck -S warning serving/*.sh deploy/*.sh
+	shellcheck -S warning serving/*.sh deploy/*.sh harness/*.sh
 
 up:      ; systemctl --user start glm53
 down:    ; systemctl --user stop glm53

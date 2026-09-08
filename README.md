@@ -395,8 +395,9 @@ other scenario is identical between the arms.
 **The suite measures tool-call correctness on small prompts, and that is all.**
 It is genuinely useful for that: zero `tool_choice=required` violations across
 every run is a real guarantee. But any claim about reasoning length, latency, or
-large-context behaviour has to come from `~/glm53-capture/replay_real.py` and
-`agent_loop.py` against a captured production request. The budget conclusion
+large-context behaviour has to come from [`harness/replay_real.py`](harness/replay_real.py)
+and [`agent_loop.py`](harness/agent_loop.py) against a captured production
+request. The budget conclusion
 rests on the agent-loop runs (U=9.0), and always did — the suite ratio was never
 load-bearing evidence and should not have been presented alongside it.
 
@@ -419,8 +420,8 @@ tokens. The agent built a working Python CLI with **10 passing tests**.
 clipping normal operation, it only binds on the runaway turns. If 2048 were too
 tight, every turn would sit pinned at the ceiling with truncated thinking.
 
-Harness: `~/glm53-capture/agent_loop.py` (sandboxed; it executes model-generated
-shell, which is why the sandbox is not a formality).
+Harness: [`harness/agent_loop.py`](harness/agent_loop.py) (sandboxed; it executes
+model-generated shell, which is why the sandbox is not a formality).
 
 ### The MCP tool surface: ~30s once per session, not per turn
 
@@ -482,10 +483,12 @@ sampled.
 Five plausible causes were proposed and refuted before the real one was found —
 `reasoning_effort`, tool-surface size, prompt wording, `--reasoning-preserve`,
 and the budget itself on an earlier single-sample test. Every refutation that
-rested on one sample was worthless against a distribution this wide. See
-`~/glm53-capture/` for the capture proxy and the replay harness; **reproduce with
-that, not with a reconstructed prompt** — five reconstructions all failed to
-trigger it.
+rested on one sample was worthless against a distribution this wide. The replay
+and agent-loop harness is in [`harness/`](harness/); **reproduce with a captured
+request, not a reconstructed prompt** — five reconstructions all failed to
+trigger it. The capture itself is not shipped (it contains real source files);
+[`harness/README.md`](harness/README.md) gives the one-line format so you can
+record your own.
 
 ## Findings
 
@@ -984,8 +987,11 @@ why per-request `reasoning_effort` selection works.
 | `benches/agentic_spec.py` | the 10 scenarios + verdict functions |
 | `benches/bench_agentic.py` | runs them; separates serving from model failures |
 | `benches/bench_mtp.py` | decode t/s + MTP acceptance from server timings |
+| `harness/` | replay + agent-loop harness; everything the scenario suite cannot measure |
+| `harness/replay_real.py` | replays one captured production request N times |
+| `harness/agent_loop.py` | real multi-turn loop, sandboxed, tool calls actually execute |
 | `deploy/` | host-level files (watchdog, systemd unit, OpenCode provider) |
-| `results/` | raw JSON behind every number above |
+| `results/` | raw output behind every number above |
 | `LICENSE` | MIT |
 
 ## License

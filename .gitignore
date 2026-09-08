@@ -23,3 +23,10 @@ __pycache__/
 .cm
 .commitmsg
 *.commitmsg
+
+# Captured requests. The harness replays REAL recorded OpenCode traffic, which
+# contains source files and paths from the session it was recorded in. The
+# capture lives outside this tree on purpose; this is belt-and-braces in case
+# one is ever copied in.
+*capture*.jsonl
+opencode_capture*.jsonl
